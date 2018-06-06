@@ -1,0 +1,410 @@
+INTRODUCTION TO MONITORING CONCEPTS
+
+	What is monitoring?
+	
+		The purpose of monitoring is to give you, as an I.T. support specialist, insight into the systems you're responsible for. Real-time monitoring can help you debug problems while they happen. Good monitoring is crucial in an emergency situation since it can give you a sense of how the system is suffering and assist you in pinpointing the root cause.
+		
+		Mean time to repair (MTTR) - The speed of a fix for a given system.
+	
+	Sources of Information - Metrics
+	
+		Aggregation functions - Performs a calculation on all the metric data in a particular set over a period of time.
+		
+		Aggregation can help transform lots of raw data in to more meaningful statistics.
+		
+		Distribution - Takes metric data and group them into buckets so the values of the outliers aren't masked.
+		
+		Counters - One of the most common types of metric, and are generally used to represent a numerical value that only increases.
+		
+		Guage metrics - Represent measured values which can go up or down.
+		
+	Collecting Metrics
+	
+		Host level sources of data - CollectD deamon - gathers metrics from sources like the os and underlying hardware. Prometheus offers a similar tool called the node exporter.
+		
+		Application level metrics - these statistics come from the applications running on the systems rather than the systems themselves. They're usually much more tailored to the specific context of a product or business than host level metrics.
+		
+			These metrics could be things like QPS or errors-per-second for web apps. For an IMAP mail server, it could be the length of open connections.
+			
+			Instrumentation like this is usually created by importing monitoring libraries into code.
+			
+				require 'prometheus/client'
+				
+				historgram = Prometheus::Client::Historgram.new(...)
+				
+				# Serve an HTTP request, and record the latency
+				def serve_http(request)
+					start = Time.now
+					handle(request) # process the request
+					stop = Time.now
+					elapsed_time = start - stop
+					historgram.observe(elapsed_time)
+					
+	
+Alerting
+
+	Alerting
+	
+		A machine-generated notification of a problem, meant for a human to read and then act on. Alerts usually take the form of some kind of electronic communication like emails, tickets, or pages.
+	
+	Alert Rules
+	
+		Alerting systems are usually configured by setting up rules to define the situation that should be alerted on. Just like with metrics and graphs, the implementation details of how these rules are specified change from tool to tool. But most systems will provide a few standard parameters to construct alerts. Some common parameters include the alert expression, threshold, duration and severity.
+		
+		# Alert for any node that has low mem for more than 30 minutes.
+		ALERT LowNodeMemory
+		IF node_memory_available < 500000000
+		FOR 30m
+		LABELS {severity = "page"}
+		ANNOTATIONS {
+			summary = "Node is running out of RAM.",
+			description = "The node has had less than 500MB of memory for more than 30 minutes.",
+			
+		#The purpose of the page is to bring attention to a severe problem that a human needs to fix in a noticeable way.
+		#Add good metadata to reduce MTTR
+		
+		Using a VCS is a great way to maintain alert rules. This is especially true since these files should be updated regularly to make sure the expressions and thresholds don't fall out of sync with the reality of the systems they monitor or suffer from bit rot. 
+	
+	Blackbox and Whitebox Monitoring
+	
+		Alerts you create from a white box monitoring system can identify two things, the cause of the problem, like the database is sure slow to respond to read operations, or it can identify its systems, which are issues like, none of our users can log in.
+		
+		Black box monitoring doesn't have visibility into or knowledge of how a system works. Instead, it concentrates on the ways it behaves as an end user would see it.
+		
+			Alerts generated from a black-box system are based on the symptoms of the problem or the errors presented to user at that moment.
+			
+			A common method of performing black box monitoring is through the use of prober. A prober is a piece of software that issues logical checks or probes against endpoints exposed by the monitored system.
+			
+			Network scanner script as basic prober
+			
+			We can do something similar with other endpoints. For example, the following Ruby script will send a probe every 30 seconds to the homepage of www.google.com, triggering a response from the Google servers listening there. Whether or not the probe succeeds or fails, an appropriate message will be printed to the terminal.
+			
+				#Create a simple prober
+				#
+				#Poke the Google homepage HTTP endpoint and display the result.
+				
+				require 'net/http'
+				require 'uri'
+				
+				def main
+					while true
+						uri = URI.parse("http://www.google.com")
+						response = Net::HTTP.get_response(uri)
+						if response.code == "200"
+							puts "Response OK!"
+						else
+							puts "Response of #{response.code} received!"
+						end
+					sleep(30)
+					end
+				end
+				
+				Signal.trap("INT") {
+					# Exit on ctrl-C SIGINT
+					puts "\nTime to exit!"
+					exit
+					}
+					
+				main()
+				
+				This script uses the URL and net HTTP libraries to create and send the HTTP request. If the response code from Google indicates success, like if it has an HTTP 200 code, the probe succeeded. If the response is anything else, the probe failed. 
+				
+				The script also uses an infinite while loop to continuously send the probes, along with a sleep method to wait 30 seconds between each loop iteration. 
+				
+				One thing you might not recognize in the code is the call to Signal.trap. This just means that when you hit the Ctrl+C keys to exit the script, by sending the SIGINT signal, the program will quit gracefully.
+				
+	Alerting Philosophy
+	
+		Latency, traffic, errors and saturation. Those signals aren't just useful for creating graphs, they can also be used to create alert rules too.
+		
+		You monitoring system should be able to answer two big questions: What's broken and why?
+		
+		Avoid noise and alert fatigue
+
+Monitoring by Example
+
+	Monitoring Metrics with Prometheus
+	
+		 Even though Prometheus is a white box system that mainly focuses on application-level monitoring, it does have exporters, which are pieces of software that extend its functionality. 
+		 
+			The node exporter, which can collect operating system and hardware metrics and export them to Prometheus. 
+			
+			And the blackbox exporter, which can issue probes to exposed HTTP and other endpoints. 
+			
+			For Windows host-level metrics, Prometheus recommends using the WMI exporter instead of the node exporter.
+	
+	Prometheus Basics
+	
+		A central Prometheus server collects metrics from properly instrumented programs, or jobs like the Ruby scripts and exporters, like the node exporter we just talked about.
+		
+		Jobs and exporters first export their metrics in a way that the Prometheus server can find them. Then the server comes along and scrapes them at regular intervals, storing these possibly aggregated metrics as time series data in a database.
+		
+		The information from this metric database can then be queried and used to create alerts or exported to visualization tools to be graphed.
+		
+		There are a few installation methods for the Prometheus server and its associated components and exporters.
+		
+		Some of them include pre built images managed by Docker. Installation through configuration management systems like Cookbooks for Chef and precomplied binary programs.
+		
+		Docker is a type of application software for containerization: https://www.docker.com/
+		
+		The cookbook for installing Prometheus via Chef has a GitHub repo here: https://github.com/elijah/chef-prometheus
+		
+	Collecting Host-Level Metrics
+	
+		With the Prometheus server installed, along with the Blackbox and node_exporters, let's examine the host level metrics we'd like to collect.
+		
+		The documentation for the node_exporter tells us that there are many statistics enabled for collection by default when the exporter is run. And several more that can be turned on if needed. For example, to just collect metrics about the CPU of the host, you could run the exporter like this. 
+		
+			node_exporter --collectors.enabled=cpu
+			
+			Remember how we talked about the Prometheus server scraping the metrics exposed by the node_exporter? Well you can see a full list of them at the /metrics HTTP endpoint provided by the node_exporter. This runs on port 9100, as you can see in the earlier output. 
+			
+			If you look closely, there are even metric descriptions above the metric names, which can help you figure out what each one does. You can access this endpoint using a browser, like this.
+			
+			localhost:9100/metrics
+			
+			We'll want to see statistics about CPU, disk and memory, so leaving the defaults works for our case. This gives us access to those metrics and more. 
+			
+			node_exporter
+	
+	Prometheus Targets
+	
+		Now that we're collecting information about the operating system and hardware, we'll need to start up the Prometheus server and tell it where to find that information. This is done in Prometheus by specifying targets.
+		
+		The Prometheus server learns about the targets it should scrape from a configuration file, which we'll call prometheus.yml.
+		
+		This configuration has details about things like what needs to be scraped and how frequently that scraping should happen. To set up Prometheus to collect metrics from the node exporter, our yml configuration file looks something like this. 
+		
+			scrape_configs:
+				job_name: "node"
+				scrape_interval: "15s"
+				static_configs:
+					targets:
+						"localhost:9100"
+						
+			Here, we've set up a job called node to have its metric end point scrape every 15 seconds. And told Prometheus to be found at the local host:9100 address.
+			
+			We've used localhost in our example, but in a production environment this could be something like an IP address and port of where the node exporter is running. We have a config, so let's use it. The Prometheus server itself could be started like this.
+			
+			sudo prometheus -config.file=prometheus.yml
+			
+			The server is now up and listening at port 9090 using the prometheus.yml file we wrote to guide it. We can access the web-based interface by visiting local host 9090 in a browser, where we'll be presented with an expression browser.
+			
+			If we type in the name of a metric that the node exporter is collecting, we should see it autocompleted in the expression field.
+			
+			In Prometheus, metrics have a specific notation, which looks something like this.
+				
+				<metric name>{<label name>=<label value>, ...}
+				
+			The metric name here is node_cpu. And the labels inside the curly brace delimiters add details about where the metric was collected from, and other information.
+			
+			Any combination of labels for the same metric name, identifies a particular instance of that metric. In this case, the value of 12.66 represents the number of seconds that the first CPU and the localhost:9100 instance of the node job spent in iowait mode.
+			
+			Even though it's not directly relevant to our monitoring samples, on a Unix based system iowait represents the time spent by a CPU waiting for an IO operation to complete, like a write to disc. There are a lot of mode in which a CPU can spend it's time and in a multi-CPU system this can trigger a large list of combinations. Luckily, Prometheus also provides a robust query language to do things like perform the aggregation functions we dove into in earlier videos. The query language details are Prometheus specific and we won't look at them too deeply. But, if we wanted to get the total time all CPU spent in iowait mode, we could rate something like this and execute it in the expression browser to condense that information into a single number. 
+			
+				sum(node cpu{mode="iowait"})
+				
+				This example is Prometheus specific, but most monitoring systems will provide some kind of language or method to query the metric data that has been collected, which can help to extract meaning from those statistics. 
+				
+				https://prometheus.io/docs/prometheus/latest/querying/basics/
+	
+	Metric Visualizations
+	
+		As expressed by the Promethius system calculating used memory might look like this. 
+			node_memory_MemTotal-node_memory_MemFree-node_memory_Buffers-_node_memory_Cached
+			
+		https://grafana.com/
+		https://prometheus.io/docs/visualization/grafana/
+	
+	Writing Alerts
+	
+		In Prometheus, alerting is handled by a separate component called the Alertmanager.
+
+		Alertmanager then handles things like grouping similar alerts together, silencing them if the human respondent decides they're not relevant, and sending notifications to the alert destinations like pagers, email addresses and ticketing systems.
+		
+		Alert rules for conditions we'd like to be notified about. We do this by creating a .rules file, example alert.rules. 
+		
+		Let's create an alert to notify us if our files system usage is getting full, which might look like this.
+		
+			ALERT filesystem_dangerously_high
+				IF ((node_filesystem_size - node_fileystem_free{mountpoint='/'}) / node_filesystem_size) * 100 > 10
+				ANNOTATIONS {
+					summary = "Filesystem usage is dangerously high",
+					description = "this devices's filesystem usage has exceeded the threshold of 10% with a value of {{ $value}}.",
+					}
+					
+			The alerting expression computes the ratio of used root file system bytes to total file system bytes, then multiplies it by a hundred to produce a percentage.
+			
+			Then it's checked against a threshold value. Remember that alerting a 10 percent utilization isn't always a good threshold. But here, we'd like to set it low enough to generate an alert so we can see Alertmanager in action.
+			
+		With the alert defined in our alert.rules file, we need to tell the Prometheus server about it so that the rules get picked up. To do this, we first need to modify the prometheus.yml configuration file we made earlier, to include a pointer to alert.rules.
+		
+			rule_files:
+				'alert.rules
+		
+			scrape_configs:
+					job_name: "node"
+					scrape_interval: "15s"
+					static_configs:
+						targets:
+							"localhost:9100"
+			
+		Just like we configured Prometheus with the YML file, Alertmanager needs a similar file to guide its behavior. We'll create a file called alertmanager.yml and set its contents like this. 
+		
+			route:
+				group_by: [Alertname]
+				# Every alert is sent to the 'email' receiver.
+				receiver: email
+				
+			receivers:
+				# Receiver is a named configuration of one or more notification integrations.
+				# In this case, email.
+				name: email
+				email_configs:
+					to: "dotmatrix@gmail.com"
+					from: "dotmatrix@gmail.com"
+					smarthost: smtp.gmai.com:587
+					html: '{{ template "email.default.html" . }}'
+					auth_username: "dotmatrix@gmail.com"
+					auth_identity: "dotmatrix@gmail.com"
+					auth_password: "some_password_here"
+		
+			Routes indicate the paths alerts should take based on some criteria.
+			
+			So, if one IT team is responsible for web applications and another for database servers you could route alerts about each service to the appropriate team.
+			
+			Alerts are grouped together by their alert name, so if multiple alerts are sent with the same name only one alert is actually routed to a receiver. 
+			
+			Receivers are the notification mechanisms that should get the alert. Email, pager duty, slack, and others. The receiver has the recipient and authentication information for the notification mechanism. In this case, the login credentials for a Gmail account.
+			
+			You can also see an each HTML option specified in the config with a template value provided to it. You can set up alert templates to customize the look and information sent to alert recipients. Kind of like how you can modify Prometheus dashboard templates.
+			
+			Next stop, we should start up our Alertmanager and point it at it's brand new configuration file.
+			
+				./alertmanager -config.file=../alertmanager.yml
+				
+				You can see on standard out that it's up and running listening on port 1993.
+				
+			The last step is to tell Prometheus where Alertmanager is running. 
+			
+				sudo ./prometheus -config.file=../prometheus.yml -alertmanager.url "http://localhost:9093"
+				
+			This means we need to restart the Prometheus server, adding another command line flag that tells it where Alertmanager lives.
+			
+	Prometheus Black-Box Monitoring
+
+		We can shift our focus to the application level and some blackbox monitoring using the blackbox exporter prober. First, we'll need something to probe. We can use Ruby to create a simple web server that serves some text when it receives an HTTP request.
+		
+		This script called server.rb will do the trick.
+		
+			require "socket"
+			
+			server = TCPServer.new("localhost", 2345)
+			
+			while true
+				socket = server.accept
+				request = socket.gets
+				puts requestsocket.print "HTTP/1.1 200\r\n"
+				socket.print "Content-Type: text/html\r\n"
+				socket.print "\r\n"
+				socket.print "Hello there! The time is #{Time.now}"
+				socket.close
+			end
+		
+		This server uses the ruby socket library to listen to port 2345 of your local machine and server responses.
+			
+		When you visit localhost:2345 in your browser, the script will respond with a message like this.
+			
+			Hello there! The time is 2017-09-02 11:25:28 -0700
+			
+		We want our prober to follow the same kind of workflow. Make a request for localhost:2345 and make sure that a successful response was generated. We'll start up our small server and it'll happily sit and listen for requests.
+		
+		Like the Prometheus server, node exporter, and alert manager, the blackbox exporter can be installed in a variety of methods listed in the readme file of its source code page.
+		
+		Also like those programs, it's configured using a YML file, which we'll call blackbox.yml.
+		
+			modules:
+				http_2xx:
+				prober: http
+				timeout: 5s
+				http:
+					valid_http_versions: ["HTTP/1.1", "HTTP/2"]
+					valid_status_codes: [] # Defaults to 2xx
+					method: GET
+					headers:
+						Host: localhost:2345
+						Accept-Language: en-US
+		
+		We specify approving module called http_2xx, which will use the HTTP protocol to make HTTP get requests to localhost:2345, where a Ruby web server lives.
+		 
+		If a 200 class response code is returned indicating a successful HTTP response, the probe passes, and we know everything is working. If not, something has gone wrong. 
+		 
+		It's worth calling out that in our example, we'll be issuing probes from the blackbox exporter running on the same computer as our web server program.
+						
+		But, in a real production system, we want to send probes from a different node. This remote probing is better at simulating requests coming from external users and will give you a more accurate signal of the health of your service.
+		
+		Probes that must travel across the network and exercise the full request path reached their destination will paint a better picture of the system as a whole, as opposed to just sending messages to the same computer they're running on. We can start the blackbox exporter like this.
+		
+			./blackbox_exporter -config.file=blackbox.yml
+			
+		Now, we'll need to tell the Prometheus server about the exporter in order for it to scrape the probe metrics.
+		
+		We do this by doing a small modification to the script config section of the Prometheus YML file like this.
+		
+			rule_files:
+				'alert.rules'
+		
+			scrape_configs:
+				job_name: "node"
+				scrape_interval: "15s"
+				static_configs:
+					targets:
+						"localhost:9100"
+			job_name: "blackbox"
+			metrics_path: /probe
+			params:
+				module: [http_2xx] # Look for a HTTP 200 response.
+			static_configs:
+				targets:
+					"localhost:2345"
+			relabel_configs:
+				source_labels: [__address__]
+				target_label: __param_target
+				source_labels: [__param_target]
+				target_label: instance
+				target_label: __address__
+				replacement: localhost:9115 # Blackbox exporter.
+		
+		We've added another job_name called blackbox, which contains the http_2xx module we created in the blackbox.yml config and the target that the prober will be sending requests to.
+		
+		We've also added a section called relabel-configs, which is used to rewrite the label set of a target before it gets scraped. In this case, we're rewriting the labels to pass the blackbox exporter the target as a parameter.
+		
+		You can see this if you check out the target's page in the Prometheus server GUI. There, you'll see the blackbox prober and its target along with the node exporter we set up earlier.
+		
+		Finally, we can reload the Prometheus server and check out the graphs. The main metric of interest to us here will be probe's success. A value of one indicates success. Zero indicates failure.
+		
+		Graphing this metric, we can see the requests to our little Ruby HTTP server had been doing just fine. So, what happens if we were to stop our HTTP server with the prober still running?
+		
+		Let's send it a SIGHUP (ctrl-C) signal to crash it and see what happens to the graph.
+		
+		The prober is still trying to send requests to the little server, but isn't getting a response anymore, which means the probes are failing. If we were to launch the server again, we'd see the probes begin to succeed once more.
+		
+		From here, the next steps for configuring the blackbox prober are to add some alerts so you know when the server goes down.
+		
+		This could be done the same way we added the file system capacity alerts by extending the alert.rules file to check if the probe status metric indicated a failure for a given length of time. 
+		
+		Pro tip: it's usually better to fire an alert only after a certain number of probes have failed.
+		
+		This is because network blips and other transition issues might cause a few probes to fail from time to time, but not indicate an actual underlying problem.
+		
+	Summary
+	
+		You've seen how to set up and configure a monitoring platform with dashboards, alert rules, and probes.
+		
+		The increased observability provided by a centralized monitoring system can help in pretty much every aspect of managing IT infrastructure. Especially when it comes to scalability and reliability.
+		
+		Using a monitoring platform means you don't have to log into each machine on your network to collect disk usage and information, and you can be immediately notified of problems through alerts so you can fix them faster.
+		
+		The synergy between storing alerting configs in VCS is as high and so is using a configuration management tool like chef to automatically deploy monitoring like the node exporter, to each node in your infrastructure.
+		
+		

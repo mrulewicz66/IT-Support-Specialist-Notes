@@ -1,0 +1,81 @@
+CREATE/INSPECT KEY PAIR, ENCRYPT/DECRYPT AND SIGN/VERIFY USING OPENSSL
+
+	In this lab, you'll learn how to generate RSA private and public key pairs using the OpenSSL utility.
+
+	OpenSSL is a commercial-grade utility toolkit for Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols. It's also a general-purpose cryptography library. OpenSSL is licensed under an Apache-style license, which means that you're free to get it and use it for commercial and non-commercial purposes (subject to some simple license conditions).
+
+	You'll access OpenSSL through SSH onto the Linux VM instance associated with your temporary Google Cloud account. You'll need to sign in to that account and access the Linux instance before continuing.
+	
+	What you'll do
+
+		OpenSSL: You'll explore what generating key pairs looks like using OpenSSL by using SSH to access the Linux instance.
+		Encrypt and decrypt: You'll use the key pair to encrypt and decrypt some small amount of data.
+		Verify: You'll use the key pair to sign and verify data to ensure its accuracy.
+		
+	Generating a private key
+	
+		Remember, a key pair consists of a public key that you can make publicly available, and a private key that you need to keep secret. Shhhh. :) When someone wants to send you data and make sure that no one else can view it, they can encrypt it with your public key. Data that's encrypted with your public key can only be decrypted with your private key, to ensure that only you can view the original data. This is why it's important to keep private keys a secret! If someone else had a copy of your private key, they'd be able to decrypt data that's meant for you. Not good!
+
+		First, let's generate a 2048-bit RSA private key, and take a look at it. To generate the key, enter this command into the terminal:
+		
+			openssl genrsa -out private_key.pem 2048
+			
+		This command creates a 2048-bit RSA key, called "private_key.pem". The name of the key is specified after the "-out" flag, and typically ends in ".pem". The number of bits is specified with the last argument. To view your new private key, use "cat" to print it to the screen, just like any other file:
+		
+			cat private_key.pem
+			
+		The contents of the private key file should look like a large jumble of random characters. This is actually correct, so don't worry about being able to read it:
+		
+	Generating a public key
+	
+		Now, let's generate the public key from the private key, and inspect that one, too. Now that you have a private key, you need to generate a public key that goes along with it. You can give that to anyone who wants to send you encrypted data. When data is hashed using your public key, nobody will be able to decrypt it unless they have your private key. To create a public key based on a private key, enter the command below. You should see the following output:
+		
+			openssl rsa -in private_key.pem -outform PEM -pubout -out public_key.pem
+			
+		You can view the public key in the same way that you viewed the private key. It should look like a bunch of random characters, like the private key, but different and slightly shorter:
+		
+			cat public_key.pem
+			
+	Encrypting and decrypting
+	
+		You'll simulate someone encrypting a file using your public key and sending it to you, which allows you (and only you!) to decrypt it using your private key. Similarly, you can encrypt files using other people's public keys, knowing that only they will be able to decrypt them.
+
+		You'll create a text file that contains some information you want to protect by encrypting it. Then, you'll encrypt and inspect it. To create the file, enter the command below. It will create a new text file called "secret.txt" which just contains the text, "This is a secret message, for authorized parties only". Feel free to change this message to anything you'd like.
+		
+			echo 'This is a secret message, for authorized parties only' > secret.txt
+			
+		Then, to encrypt the file using your public key, enter this command:
+		
+			openssl rsautl -encrypt -pubin -inkey public_key.pem -in secret.txt -out secret.enc
+			
+		This creates the file "secret.enc", which is an encrypted version of "secret.txt". Notice that if you try to view the contents of the encrypted file, the output is garbled. This is totally normal for encrypted messages because they're not meant to have their contents displayed visually.
+		
+		The encrypted file will now be ready to send to whoever holds the matching private key. Since that's you, you can decrypt it and get the original contents back. Remember that we must use the private key to decrypt the message, since it was encrypted using the public key. Go ahead and decrypt the file, using this command:
+		
+			openssl rsautl -decrypt -inkey private_key.pem -in secret.enc
+			
+		This will print the contents of the decrypted file to the screen, which should match the contents of "secret.txt":
+		
+	Creating a hash digest
+	
+		Now, you'll create a hash digest of the message, then create a digital signature of this digest. Once that's done, you'll verify the signature of the digest. This allows you to ensure that your message wasn't modified or forged. If the message was modified, the hash would be different from the signed one, and the verification would fail.
+
+		To create a hash digest of the message, enter thiscommand:
+		
+			openssl dgst -sha256 -sign private_key.pem -out secret.txt.sha256 secret.txt
+			
+		This creates a file called "secret.txt.sha256" using your private key, which contains the hash digest of your secret text file.
+
+		With this file, anyone can use your public key and the hash digest to verify that the file hasn't been modified since you created and hashed it. To perform this verification, enter this command:
+		
+			openssl dgst -sha256 -verify public_key.pem -signature secret.txt.sha256 secret.txt
+			
+		This should show the following output, indicating that the verification was successful and the file hasn't been modified by a malicious third party:
+		
+		If any other output was shown, it would indicate that the contents of the file had been changed, and it's likely no longer safe.
+		
+	Conclusion
+	
+		Wohoo! You've successfully used openssl to create both a public and a private key. You used them to practice file encryption and decryption, and to create and verify digital hashes.
+		
+		

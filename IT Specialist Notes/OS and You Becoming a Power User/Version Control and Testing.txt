@@ -1,0 +1,355 @@
+VERSION CONTROL AND TESTING
+
+Anatomy of Commit Message
+
+	The first line is a short summary of the commit, followed by a blank line, which is in turn followed by a full description of the changes which details why they are necessary and anything that might be particularly interesting about them or difficult to understand. (Line lengths 50 space 72 and repeat space 72)
+	
+	git log (shows comments preceded by # symbol)
+	
+Basic Git Workflow
+
+	Using ubuntu packet management system, apt, to install
+	
+		git --version
+	
+	This set of commands will create a normal file system directory called scripts, and init an empty git repo inside it.
+
+		mkdir scripts
+		cd scripts
+		git init
+		
+	View config
+	
+		git config -l
+		
+	The git add command will send a new file from untracked to the staged status and change a modified file to staged.
+	
+		git add new_script.rb
+		
+		When a file is staged, it's been added to the staging area and is ready to be committed to the git repository.
+		
+	To initiate a commit of staged files, you issue the git commit command. This will launch a text editor, which is set in most operating systems by an environment variable like $EDITOR. This is where you can write your commit message.
+	
+		git commit
+		
+		"Adding a new script to demo the basic git workflow."
+		
+	To check the history of commits for your project, you can just the git log command. 
+	
+		git log
+		
+	or for more info
+	
+		git log --decorate
+		
+		The (HEAD -> master) portion, shows which branch HEAD is pointing after the commit was made.
+		
+	Setting your email address for every repository on your PC.
+	
+		git config --global user.email "email@example.com"
+		
+The Git and GitHub Workflow
+
+	Copy the repository from the GitHub servers to the local machine.
+	
+		git clone "url of example repo"
+		
+	Add readme
+	
+		git add README
+		git commit
+		
+	Send changes to initial repo
+	
+		git push origin master
+		
+More with Git
+
+	How to skip staging area. -a automatically stages every file that is tracked before doing the commit. So you can skip the git add part. It is a shortcut to stage a file and commit it in one step.
+	
+		git commit -a
+		
+	The -m flag lets you inline your commit message, so you don't need to open up a full text editor to type out the description of your change.
+	
+		git commit -a -m "Punch it; let's skip the staging area."
+		
+	You can remove files from your repo using git rm command which will stop the file from being tracked by git and remove it from the git directory.
+	
+		git rm somefile.txt
+		git status
+		git commit -m "We didn't want that file"
+		
+	Git also has an mv command to move files around.
+	
+		git mv new_script_2.rb subdirectory/
+		git commit -m "Let's move this file"
+		
+	If we want to ignore any Ruby source code files for example in our repo we would add this to our .gitignore file.
+	
+		*.rb
+		
+Undoing Things
+
+	--amend takes w/e in staging to amend (don't use on public repo because it overwrites the file change history and cause some confusing situations when working with other people.)
+	
+		git commit --amend
+	
+	The --stat option tells it to print out some extra information about the changes we've committed.
+
+	Git also lets you work with files in the staging area. If you've added a file to your staging area with git add, but don't want to include it in the current commit, you can unstage it by using the git reset command. This happens a lot if you use git add *, where * is a file glom pattern to add everything in the working tree to the staging area.
+	
+		git add *
+		git status
+		git reset HEAD file_name
+		
+	 You can change a file back to its earlier committed state by using the git checkout command. git status will give us instructions on how to discard changes too.
+	 
+		git checkout -- new_script.rb
+
+Rollbacks
+
+	git revert. Creates a commit that contains the inverse of all the changes made in the bad commit to cancel them out.
+	
+		git revert HEAD
+		
+		Since you can think of head as a pointer to the snapshot of your current commit, when you pass head to revert, you tell git to rewind that current commit.
+		
+		git log -p -2
+		
+		-p shows us the difference between what was committed in the current and previous snapshot. The -2 tells git log that we only want the last two commit entries from the log.
+		
+Identifying a Commit
+
+	You can target a specific commit by using its Commit ID. 40 long character text, SHA1 hash. SHA1, takes a bunch of data as an input, then produces a 40-character string from that data as an output.
+	
+	Used as a way to guarantee the consistency of your repo. Having consistent data means that what you've got is exactly what you expect.
+	
+		git revert hashID
+		
+		You do not need to specify the entire hashID, first 4 characters should be enough.
+		
+Branching and Merging
+
+	Branch - Pointer to a particular commit. But what it represents is an independent line of development in a project, and the commit it points to is one in a series of a particular chain of development history.
+	
+	The default branch that Git creates for you when a new reop is initialized is called Master.
+	
+	The master branch is used to represent the Known-good-state of a project.
+	
+Working with Branches
+
+	HEAD - Points to the commit your current working directory is based on, which is usually the same as the branch that you're working on, aka the master
+	
+	You can use the git branch command to list, create, delete, and manipulate branches.
+	
+		git branch
+		
+		git branch -d crazy-experiment
+		
+		-d flag to delete branches. If there are changes in the branch you want to delete that haven't been merged back to the master branch, git will let you know with an error.
+		
+		git branch -D crazy-experiment
+		
+		If you're sure you want to delete the branch even though the changes haven't been merged.
+		
+	Creating a branch
+	
+		git branch my-new-branch
+		
+	Checkout lets you navigate the branches you've created using git branch.
+	
+		git checkout awesome-new-feature
+		
+		Before, we were working on the master branch, but now we've changed to a different branch and it shows in the output. 
+		
+	Git also provides a useful shortcut to create a new branch and switch to it in a single command.
+	
+		git checkout -b even-better-feature
+		
+	When you switch branches in Git, the working directory and commit history will be changed to reflect the snapshot of your project in that branch.
+	
+Merging
+
+	Merging is the term that Git uses for combining branch data and history together. Using git merge we can take the independent snapshots and get history of one Git branch and blend them into another one.
+	
+	This will merge the specified branch into your current branch, so if we wanted to merge the even better featured branch from the last example and the master we would do this.
+
+		git merge <branch>
+		
+		git checkout master
+		git merge even-better-feature
+		
+		Now we've brought the master branch up to speed which we can see by looking at the git log.
+		
+	Git uses two different algorithms to perform a merge: fast-forward and three-way merge.
+	
+		Fast-Forward merge: This kind of merge happens when all of the commits in the checked-out branch are also in the branch that's being merged.
+		
+		Three-way merge: Performed when the history of the merging branches has diverged in some way and there isn't a nice linear path to combine them by fast-forwarding. This could happen if a commit were made on the master branch and on the even-better-feature branch. When this happens, Git will tie the branch histories together with a commit, this merges the snapshots at the two branch tips with the most recent common ancestor, the comit before the divergence.
+		
+	Merge Conflicts
+	
+		git add file_name
+		
+Git Remotes
+
+	Upstream remote repository centralized for all devs.
+	
+	If you wanted to add a remote to an existing repo, you could run the git remote command passing it the URL of that remote repo.
+	
+		git remote add origin url
+	
+		Here, instead of performing a clone, we've added a connection to the repo using the URL where it's located. We've also named the remote connection "origin" which is way easier to use when we want to reference the remote, rather than typing the full URL into our commands. 
+		
+		When you clone a repo using the git clone command, Git automatically createsw a shortcut to the remote repo called origin that points back to the repo you cloned.
+		
+	Git supports a lot of ways to reference a remote repo. HTTP, HTTPS, and SSH protocols, and their corresponding URLs.
+	
+		HTTP is usually used as a way to allow read-only access to a repo. Good if you don't want write-enabled connections pushing content to your repo.
+		
+		HTTPS and SSH both provide methods of authenticating users, so you can control who gets permission to push.
+		
+	What else can remotes do?
+	
+		list remotes w/ git remote
+		
+		rename them w/ git remote rename
+		
+		delete them w/ git remote rm
+		
+		list remote connectinos and there URLs w/ -v flag
+		
+	Git Fetch
+	
+		git fetch lets you pull the data down from a remote repo, so you can see what other people have committed.
+		
+		To fetch all of the branches from a remote repo, you can give git fetch the name of the remote.
+		
+			git fetch origin
+			
+		To only fetch specific branches from that remote we add the branch to the command. 
+		
+			git fetch origin master
+			
+		You can see the remote branches in your repo by adding the -r flag to the git branch command.
+		
+			git branch -r 
+			
+			Remote branches have a major difference from the local branches: they're read-only, which means you can only look at them but can't make any changes.
+			
+		You can use the git fetch command to review the changes that happen in the remote repository, and if you approve of them you can use git merge to integrate them into a local branch.
+		
+			git merge origin/master	
+	
+	Git Pull
+	
+		Running git pull will fetch the remote copy of the current branch and automatically try to merge it into the current local branch.
+			
+			This command will synchronize the contents of the local master branch with the contents of the master branch in the remote repository.
+			
+				git pull origin
+			
+			This command pulls changes from the origin remote master branch and merges them into the local checked out branch. 
+			
+				git pull origin master
+		
+	Git Push
+	
+		git push to send data upstream
+		
+			git push origin master
+			
+		You can also push all of your local branches to the remote repository by passing a flag called --all.
+		
+			git push --all origin
+			
+			
+Why Test?
+
+	Software testing - The process of evaluating computer code to determine whether or not it does what you expect.
+	
+		Formal software testing takes this a step further, codifying tests into its own software and code that can be run to verify that your program does what you expect.
+	
+	Test-Driven Development (TDD) - Calls for creating the tests before writing the code.
+	
+		The test-driven dev cycle usually first involves writing a test, then running it to make sure it fails.
+		
+		Once you've verified that it fails, you write the code that will satisfy the test, and run the test again.
+		
+		If it passes, you can continue on to the next part of your program.
+		If it fails, you debug it and run the tests again.
+		
+	Black Box vs White Box
+	
+		White box testing - Sometimes called clear box or transparent testing, relies on the test creator's knowledge of the sofware being tested to construct the test cases.
+		
+		Black box testing - The tester doesn't know the internals of how the software works.
+		
+			White box testes are helpful because the test-writer can use their knowledge of the source code itself to create tests that cover most of the ways the program behaves.
+			
+			Black box tests are useful because they don't rely on knowledge of how the system works, which means their test cases are less likely to be biased by the code.
+			
+			
+	Test Types
+	
+		The goal of a Unit Test is to make sure that small isolated parts of a program are correct. Unit tests are usually written alongside the code to test the behavior of individual pieces, aka units.
+		
+		An important part of unit tests is Isolation. The tests should only test the unit of code they target. This ensures that any success or failure of the test is only because the behavior of the unit in question.
+		
+		Integration tests verify that the interactions between different pieces of code in integrated environments are working as expected. Since unit tests shouldn't cross boundaries to do things like make a network request, integrate with an API, or a database. The goal of an integration test is to verify these interactions and make sure the whole systemn works as expected.
+		
+		Regression tests are usually written as part of the debugging and troubleshooting process to verify an issue or error has been fixed once it's been identified. They make sure mistakes don't happen twice, like the same bug reintroduced to the code.
+		
+		Smoke tests, or build verification tests, get their name from a simple concept in hardware testing. Prototype like test.
+		
+		Taken together, a group of one or more tests is usually called a test suite.
+		
+		
+	Unit Tests
+	
+		Edge case - Input to our code that produce unexpected results, and are found at the extreme ends of the ranges of input we imagine our programs will typically work with.
+		
+	Writing Unit Tests in Ruby
+	
+		def divider(x, y)
+			return x/y
+		end
+	
+	Test-Unit Gem
+	
+		gem install test-unit
+		
+		assert_equal method 
+		
+		assert_raise
+		
+			assert_raise(ZeroDivisionError) {divider(x,y)}
+			
+		-create our divider.rb file:
+		
+			def divider(x, y)
+				return x/y
+			end
+			
+		-create our test_divider.rb file:
+			
+			require "test/unit"
+			require "divider"
+			
+			class TestDivider < Test::Unit::TestCase
+			
+				def test_basic
+					x = 10
+					y = 2
+					expected_output = 5
+					assert_equal(expected_output, divider(x, y))
+				end
+				
+				def test_divide_by_0
+					x = 10
+					y = 0
+					assert_raise(ZeroDivisionError) {
+						divider(x, y)}
+				end
+			end
+	

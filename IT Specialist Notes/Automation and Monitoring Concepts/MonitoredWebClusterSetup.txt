@@ -1,0 +1,139 @@
+SET UP A MONITORED WEB CLUSTER FROM SCRATCH
+
+	In this lab, you're going to take all the concepts of automation, configuration, and monitoring and apply them to a real-world scenario. You'll set up a web cluster from the ground up.
+
+	You'll need to deploy the cluster using the Chef CM system, set up its monitoring using Prometheus, and demonstrate that the monitoring works by detecting problems with the stack.
+
+	What you'll do
+
+	Configure monitoring and alerting on Prometheus.
+	Configure the Chef server.
+	Deploy Apache2 to multiple servers.
+	Monitor the Apache2 service across the cluster.
+	Configure alerts for the Apache2 service.
+	
+	Step 0: Connect to the Prometheus host
+	
+	Step 1: Change directories
+	
+		We've provided a basic Prometheus configuration file in the directory /share called prometheus.yml. You'll be working out of this directory. So, first navigate your shell to that directory using the change directory command: 
+		
+		cd /share
+		
+	Step 2: Start Alertmanager
+	
+		Prometheus does not, by default, have a notification framework. So, we've installed alertmanager, which uses the built-in alerting framework to alert through a series of receivers. For demo purposes, we'll use the built-in Alerts page on the Prometheus web page to view the alerts. But first, you'll need to start the alertmanager with the config file we've provided (/share/alertmanager.yml), and send it to the background using this command:
+		
+		alertmanager --config.file=/share/alertmanager.yml &
+		
+	Step 3: Start Prometheus
+	
+		Now that alertmanager is running, you'll need to start the Prometheus service, just like in the last lab. However, you now need to pass a new command line flag. Using the basic configuration file and our local install of alertmanager, start Prometheus in the background:
+		
+		prometheus --config.file=/share/prometheus.yml --alertmanager.url=http://localhost:9093 &
+		
+	Step 4: Navigate to the Alerts page
+	
+		Now that alertmanager and Prometheus are running, navigate to the local Prometheus web page using the External IP of the prometheus-host machine at port 9090 (i.e. EXTERNAL_IP_ADDRESS:9090). The External IP address can be found in Google Cloud Console, under the Products & Services -> Compute Engine -> VM instances:
+		
+		The Alerts page should look like the image below, showing that the Apache service is up and running:
+		
+	Step 5: Configure Prometheus for the remaining hosts
+	
+		See how there are only two hosts being monitored? You'll need to modify the prometheus.yml file in order to get it to scrape all five hosts. You can go ahead and do that now. Using your favorite text editor, open up the /share/prometheus.yml file and modify the - targets line to include all five hosts, like this:
+		
+		- targets: [‘10.0.0.2:9117', ‘10.0.0.3:9117', ‘10.0.0.4:9117', ‘10.0.0.5:9117', ‘10.0.0.6:9117']
+		
+	Step 6: Reload the Prometheus config	
+	
+		Now that you've updated the Prometheus config, you'll need to reload the configuration in the running process. Prometheus makes this fairly easy by allowing to POST to /-/reload. You can do this easily while on the prometheus-host by running this command:
+		
+		curl -X POST http://localhost:9090/-/reload
+		
+	Prep the Chef server
+
+		Step 1: Connect to the Chef workstation
+		
+			Go ahead and connect to the chef-workstation Google Cloud instance now. As a reminder, your machines are available in Google Cloud Console under Compute Engine -> VM instances. If you're having difficulty connecting to your instance, no worries! Just follow the steps outlined in the Accessing Qwiklabs reading for detailed instructions on how to connect.
+			
+		Step 2: Change directories
+		
+			For this lab, you'll need to be working from the /share directory. Go ahead and change into that directory now by using the change directory command:
+			
+			cd /share
+			
+		Step 3: Copy over the Chef admin key
+		
+			Before you can push new configurations to the Chef server, you need to acquire the dynamically generated chefadmin.pem key. You can do this using scp, a secure file-transfer command line tool implementing the Secure Copy Protocol (scp) to encrypt and transfer data between hosts. To make this easier, we've provided a script called get_chef_key.sh in the /share directory. To execute it, run this command:
+			
+			/share/get_chef_key.sh
+			
+		Step 4: Configure and verify SSL configuration
+		
+			To configure the Chef server and the Chef nodes, you'll use the command line tool, knife. knife provides an interface between a local Chef repo and the Chef server. It allows us to manage nodes, cookbooks and recipes, and much more. First, you'll need to copy the SSL certificates from an HTTPS server to our trusted_certs_dir. This directory is used by the Chef server and Chef client to store trusted SSL certificates. You can do this by using the ssl fetch subcommand:
+			
+			knife ssl fetch
+			
+			To verify that the fetch executed correctly, use the ssl check subcommand:
+			
+			knife ssl check
+			
+		Step 5: Configure and verify cookbook configuration
+		
+			Chef uses cookbooks as the fundamental unit of configuration and policy distribution. A cookbook contains everything required to prepare an environment to its specifications. The knife cookbook subcommand is used to interact with cookbooks on the Chef server or the local Chef repo. We have provided a minimal cookbook for you in the /share/cookbooks directory, called chef_apache2. In the cookbook you'll find:
+
+			a metadata file (/share/cookbooks/Chef_apache2/metadata.rb)
+			a recipe (/share/cookbooks/Chef_apache2/recipes/default.rb)
+			a template (/share/cookbooks/Chef_apache2/templates/index.html.erb)
+			
+			This cookbook needs to be uploaded to the Chef server in order to be distributed to the Chef nodes. You can accomplish this using the cookbook subcommand:
+			
+			knife cookbook upload chef_apache2
+			
+			To verify that the cookbook upload was completed successfully, use the cookbook list subcommand to view all of the cookbooks on the Chef server:
+			
+			knife cookbook list
+			
+	Node management
+		
+		Step 1: Bootstrap and verify chef nodes
+			
+			Now that you have a configured Chef server with a deployable cookbook, you can begin bootstrapping the Chef nodes that this Chef server will manage. The bootstrapping process is done by using the knife bootstrap subcommand. The command line arguments you'll use take the following syntax: knife bootstrap IP_ADDRESS --ssh-user USER --sudo --identity-file IDENTITY_FILE --node-name NODE_NAME --run-list RUN_LIST.
+
+			Since this must be done one at a time, we've provided a manage_nodes.sh script to run this process for the five hosts we've provided. Go ahead and run the script with the --bootstrap command line flag to bootstrap the five hosts:
+			
+			/share/manage_nodes.sh --bootstrap
+			
+			Next, you should verify that the bootstrap process completed successfully. You can do that using the node subcommand:
+			
+		Step 2: View the load balanced web service
+		
+			Now that you've bootstrapped all five nodes, you can verify that the nodes are healthy. This can be done by viewing the Backend Service in Google Cloud Console. From the Products & Services menu, go to Network services -> Load balancing. From there, select the Advanced menu:
+			
+			Then, select the Backend services tab, and click on the backend service listed:
+			
+			In here, you should see that five of the five instances are healthy, indicating that they're all hosting an apache2 webserver running HTTP on port 80. Next, you'll want to view the load-balanced web page being hosted by the five nodes you configured earlier. The easiest way to find this IP address is by going back to the Advanced menu in Network services -> Load balancing, using the back button at the top of the page:
+			
+			Go to the Global forwarding rules tab and click on your Global forwarding rule:
+			
+			Finally, click on the Global external IP address listed in the Global forwarding rule. It will open a new tab displaying the load-balanced web page hosted on your five Chef nodes:
+			
+		Step 3: Confirm the alerts have changed	
+		
+			Now, go back to the Prometheus alerts page and view the alerts to make sure they recognize that the nodes are serving properly. You should see something that looks like this:
+			
+		Step 4: Take down apache
+		
+			Now that you have a working web cluster, you can take them down to confirm that the alerts go back to the state you would expect if apache had failed on its own. This can be done by logging into the machines and stopping the Apache2 services. To simplify this, we've added another function to the manage_nodes.sh script. Go ahead and run it with the --kill command line flag:
+			
+			/share/manage_nodes.sh --kill
+			
+			The Prometheus alerts page should now show that the Apache services are down. In a true production environment, you'd configure this to page or email someone so that they can respond and restore the services that have failed.
+			
+	Conclusion
+
+		Wohoo! You've successfully configured a load-balanced web cluster, monitored by Prometheus. You configured the Alertmanager within Prometheus, navigated to the Alerts page, configured Prometheus for the remaining hosts, then reloaded the Prometheus config. After this, you connected to the Chef workstation, changed directories, copied over a Chef admin key, configured and verified an SSL configuration, then configured and verified a cookbook. Next, you bootstrapped, verified these Chef nodes, viewed the load balanced web service, and confirmed that the alerts had changed on the Alerts page. Finally, you saw the results after you took down the Apache2 service. That was a whole lot of steps -- well done!
+
+		In a real-world scenario, if an Apache service goes down, the Prometheus page would alert the production environment. This way, you can respond and restore the services that have failed. You can imagine how this can be a super useful way to monitor infrastructure services and automate ways to keep an eye on them, in case things go wrong.
+
+		Setting up a monitored web cluster from scratch is no small feat. Awesome job!

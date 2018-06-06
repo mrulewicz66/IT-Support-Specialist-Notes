@@ -1,0 +1,125 @@
+For each scenario, present improvements to processes based on the company’s needs and current restrictions. Review improvements that align with the company’s restrictions. You should write a 200-400 word process review for each company presented to you. You’ll be scored on the following:
+
+Explain the problem the company faces.
+List at least five process improvements you plan to implement.
+Explain the rationale behind each improvement recommendation.
+
+Company X:
+
+Process Improvement #1:
+
+Problem: The organization doesn’t currently have disaster recovery or backups in place.
+Solution: Implement an NAS solution to do daily differential backups and weekly full backups.
+Reasoning: Company X is a small company. Since we have a restriction on financial resources, we should implement a cheaper solution for backups. We can get an affordable NAS and have backups done off-site.
+////////////////////////////////////////////////////////
+
+Network Funtime Company:
+
+	Process improvement #1:
+
+	Problem: HR issues new employees different models of laptops.
+	Solution: Designate specific laptop models to OU's so that performance and cost effectiveness are optimized.
+	Reasoning: The hardware requirements between OU's will be different depending on their daily tasks. In order to reduce cost and maintain performance, employees who do not need high-end machines for production purposes should be allocated more appropriate and less expensive models. Engineers will probably see more value out of dedicated machines than sales, ect.
+
+	Process improvement #2: 
+
+	Problem: There's no inventory system to keep track of the total company computers.
+	Solution: Set up local or SaaS fixed asset tracking.
+	Reasoning: Being able to keep track of computers, printers, devices, ect is necessary for security, theft prevention, employee accountability, asset insurance, and maintaining correct upkeep and appropriation of company resources.
+
+	Process improvement #3:
+
+	Problem: No centralized management of OS distribution for employees.
+	Solution: Set up an Active Directory server and create an MDT deployment share.
+	Reasoning: Deploy Operating Systems with improved cost, reduced time, reduced process of difficulty, and ensured consistency of results. This also makes regular batch updates available, improving company security, software, and network infrastructure.
+	
+	Process improvement #4:
+
+	Problem: HR representative directly emailed about IT and office related issues.
+	Solution: Implement ticketing system.
+	Reasoning: A ticketing system helps to organize, prioritize, and document troubleshooting issues.
+
+	Process improvement #5:
+
+	Problem: The setup process for new employees company login takes HR several hours per person.
+	Solution: Use Role-Based Access Control (RBAC) to assign user groups instead of assigning permissions individually.
+	Reasoning: Setup process for new users can be automated through RBAC. Permissions are already established. New users may be automatically asked to create a password upon first login. Reduce time and company resource utilization for many new employees all at once.
+
+	Process improvement #6:
+
+	Problem: No way to retrieve employee login information if password if lost.
+	Solution: Set up Active Directory server and organize OU's.
+	Reasoning: Sysadmin can easily resolve through AD for multiple employees simultaneously if needed. Avoid a time consuming reimaging process.
+
+	Process improvement #7:
+
+	Problem: Long term costs of SaaS: email, word processors, spreadsheet apps, communications.
+	Solution: Compare long term costs of SaaS vs local server virtualization of company resource applications.
+	Reasoning: For a small company probably less expensive in the long term. While also, the physical resource allocation of the virtual server running for just 100 employees should be sufficient enough so that no lag or downtime is present during application load and utilization.
+////////////////////////////////////////////////////////
+
+W.D. Widgets:
+
+	Process improvement #1:
+
+	Problem: When new computers are provisioned, you have to install many sales-specific applications manually onto every machine.
+	Solution: Set up NFS to share a folder with the OU's who need to access these types of applications.
+	Reasoning: Automates the process of having access each computer on the network manually.
+
+	Process improvement #2:
+
+	Problem: No company services used on the cloud.
+	Solution: We can use a SaaS provider for our email server, some software, and our IM.
+	Reasoning: It's cheaper to purchase an enterprise level SaaS rather than paying software licenses for each user. While also freeing up in-house hardware resources to the cloud.
+
+	Process improvement #3:
+
+	Problem: No backup for customer data.
+	Solution: Consider IaaS cloud storage for backing up customer data. It may be cheaper to move to an off-site storage method the larger the company grows.
+	Reasoning: No method of customer data recovery could be disastrous or ruin a company. Cloud storage provides the easiest method of backing up data, however, may become more costly in the long term than an upfront investment for an off-site data storage facility as the company grows.
+
+	Process improvement #4:
+
+	Problem: IT-related requests are directly emailed to the sysadmin.
+	Solution: Implement ticketing system issues.
+	Reasoning: A ticketing system helps to organize, prioritize, and document troubleshooting issues.
+
+	Process improvement #5:
+
+	Problem: Company operations need to scale with growth.
+	Solution: Analyze condition of hardware infrastructure. Develop Disaster Recovery Plan. Stress testing critical hardware. Consider Virtualization of services and cloud technology.
+	Reasoning: To maintain business scale, it's crucial to have all systems up to date and potentially replace out date machines. It will also be important to take preemptive measures against points of failure and address system weaknesses. Virtualization and cloud computing services can also reduce investment cost for additionally needed IT infrastructure.
+////////////////////////////////////////////////////////
+
+Dewgood:
+
+	Process improvement #1:
+
+	Problem: No company internal messaging system.
+	Solution: Configure an IRC service on the server.
+	Reasoning: Free instant chat application. Great for a non-profit.
+
+	Process improvement #2:
+
+	Problem: Stale Active Directory users.
+	Solution: Schedule Active Directory to disable AD user accounts inactive for more than, say, 60 days.
+	Reasoning: Automate the process of cleaning stale users from the AD service.
+
+	Process improvement #3:
+
+	Problem: Unorganized ticketing system.
+	Solution: Reconfigure ticketing system to be more organized; separate internal and external requests. Clearly state company policy on procedures to prioritize and document requests.
+	Reasoning: Too much information in one place where it doesn't need to be can be confusing. Correctly organizing tickets, procedure, and documentation will make life less stressful for everyone involved.
+
+	Process improvement #4:
+
+	Problem: Insecure backup of fileserver via disk.
+	Solution: Deploy resync over SSH of the server backup to a secure external location.
+	Reasoning: You might personally lose a disk and important backup information and it's a waste of time to not just automate the backup process. Also supports compression and encryption of data.
+
+	Process improvement #5:
+
+	Problem: Website goes down consistently and employees don't know how to fix it.
+	Solution: Publish Post-mortem report after every incident.
+	Reasoning: Clear documentation of incident recovery should be available so the same mistakes are not repeated and so that similar incidents have expected recovery methods.
+

@@ -1,0 +1,172 @@
+///////////////////////////OS POWER USER NOTES///////////////////////////
+
+Windows: Devices and Drivers - Device Manager
+Plug and Play (PnP) - protocols on installation, on startup, on runtime hardware events.
+https://docs.microsoft.com/en-us/windows-hardware/drivers/install/hardware-ids
+https://docs.microsoft.com/en-us/windows-hardware/drivers/install/device-identification-strings
+(INF) file
+The format of the hardware ID typically consists of the following:
+
+A bus-specific prefix, such as PCI\ or USB\.
+Vendor-specific identifiers for the device, such as a vendor, model, and revision identifier. The format of these identifiers within the hardware ID is also specific to the bus driver.
+
+independent hardware vendor (IHV)
+Windows uses hardware IDs and compatible IDs to search for a driver package for the device.
+
+For example, when a user plugs a wireless local area network (WLAN) adapter into the port of a USB hub that is attached to the computer, the following steps occur:
+
+	The device is detected by the USB hub driver. Based on information that it queries from the adapter, the hub driver creates a hardware ID for the device.
+
+	For example, the USB hub driver could create a hardware ID of USB\VID_1234&PID_5678&REV_0001 for the WLAN adapter, where:
+
+	VID_1234 is the identifier of the vendor.
+	PID_5678 is the product, or model, identifier of the device.
+	REV_0001 is the revision identifier of the device.
+	For more information about the format of USB hardware IDs, see Identifiers for USB Devices.
+
+	The USB hub driver notifies the Plug and Play (PnP) manager that a new device was detected. The PnP manager queries the hub driver for all of the device's hardware IDs. The hub driver can create multiple hardware IDs for the same device.
+
+	The PnP manager notifies Windows that a new device needs to be installed. As part of this notification, Windows is provided with the list of hardware IDs.
+
+	Windows starts a search for a driver package that matches one of the device's hardware IDs. If Windows cannot find a matching hardware ID, it searches for a driver package that has a matching compatible ID for the device.
+https://docs.microsoft.com/en-us/windows-hardware/drivers/install/step-2--a-driver-for-the-device-is-selected
+
+
+--------------------------
+
+When you format a file system on a partition it becomes a Volume.
+
+The other component of a disk is a partition table. A partition table tells the OS how the disk is partitioned. The table will tell you which partitions you can boot from, how much space is allocated to partition, etc. There are two main partition table schemes that are used, MBR, or Master Boot Record, and GPT, or GUID Partition Table. 
+
+Unified Extensible Firmware Interface (UEFI) synonomous to bios, legacy.
+
+Formatting Filesystem in CLI - Diskpart
+	list disk
+	select disk 1
+	clean (remove formatting/partitioning from disk)
+	create partition primary (creates primary partition for filesystem)
+	select partition 1
+	active
+	format FS-NTFS label-my-thumb-drive quick (formats drive in NTFS in Quick mode)
+	
+---------------------------
+mklink newfile oldfile (symbolic link of newfile to old)
+mklink /H newfile oldfile (Hard links new file to old so if newfile's name changes it still links to old file)
+
+chkdsk /F C: (or whatever disk you want to check, /F tells to fix problems)
+
+---------------------------
+
+Get-Process | Sort CPU -descending | Select -first 3 -Property ID,ProcessName,CPU (Get-Process output to sort of CPU data, descending for biggest numbers first, output selects first 3 displaying prop's ID,ProcessName, and CPU amount)
+
+
+
+
+
+Linux:
+udev (userspace /dev) is a device manager for the Linux kernel.
+ls -l /dev
+
+sudo dpkg -i /home/qwiklab/downloads/atom-amd64.deb (installs package)
+sudo apt install -f (fix missing dependencies)
+dpkg -s atom (verify installation)
+sudo tar -xvf extract_me.tar (extract this file)
+cd ~ (move to original directory)
+tar -cvf Planets.tar /home/qwiklab/documents/Earth /home/qwiklab/documents/Mercury /home/qwiklab/documents/Venus (archives them into Planets.tar)
+sudo apt install p7zip-full (install 7-zip)
+dpkg -s p7zip-full (verify install)
+sudo apt remove gimp (remove GIMP) dpkg -s gimp (verified)
+
+--------------------------
+Disk Partitioning and Formatting a Filesystem
+sudo parted -l (shows disks)
+sudo parted /dev/sdb (parted tool)
+print (show disk detail)
+mklabel gpt (set partition table to gpt)
+mkpart primary ext4 1MiB 5GiB
+
+sudo mkfs -t ext4 /dev/sdb1
+sudo mount /dev/sdb1 /my_usb/
+now if we go to my_usb we can start reading and writing to the filesystem.
+
+sudo umount /dev/sdb1 (unmounts fs)
+
+cat /etc/fstab (how to automatically mount FS's when PC boots)
+sudo blkid (shows UUID for storage ID's)
+https://en.wikipedia.org/wiki/Fstab
+
+--------------------------
+
+In Linux, an inode stores everything about a file, except for the filename and the file data.
+softlink (symbolic link equiv), Hardlinks (links to inode in inode table in FS)
+ln -s important_file_softlink
+ln important_file imoprtant_file_hardlink
+
+du -h (if you want to know how much space files are using in a directory)
+df -h (This shows you the free space available on your entire machine)
+
+sudo fsck /dev/sda (must unount FS before disk check)
+
+In Linux, you can view block devices and file systems attached to your system using the lsblk command.
+
+ps -ef (to view process information)
+ps -ef | grep Chrome (process info of Chrome, ect)
+
+ps -aux command allows you to list all currently running processes on a Linux machine. 
+
+ls /var/log (show log file directories)
+/var/log/syslog
+
+less /var/log/syslog | grep error (or app name)
+
+tail -f /var/log/syslog (check in real time)
+
+
+
+
+	Solve These:
+	
+Apr  4 10:37:53 linux-instance root: Qwiklab Error: There is a corrupted file found in
+ /home/lab/corrupted_file. Remove this file.
+ 
+Apr  4 10:37:53 linux-instance root: Qwiklab Error: VLC - Package out of date, upgrade
+ to the latest version.
+ 
+Apr  4 10:37:53 linux-instance root: Qwiklab Error: Process: [bash /home/totally_not_m
+alicious] is malicious, terminate the process immediately!
+
+Apr  4 10:37:53 linux-instance root: Qwiklab Error: Permission Denied: /home/lab/super
+_secret_file.txt
+
+Apr  4 10:37:53 linux-instance root: Qwiklab Error: Disk space is super low, fix it!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

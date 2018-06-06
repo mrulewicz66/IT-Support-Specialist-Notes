@@ -1,0 +1,113 @@
+SYSTEM ADMINISTRATION AND IT INFRASTRUCTURE SERVICES
+
+Hardware Life Cycle
+	There are four main stages of the hardware life cycle.
+	-Procurement, this is the stage where hardware is purchased or reused for an employee. 
+	-Deployment, this is where hardware is set up so that the employee can do their job. 
+	-Maintenance, this is the stage where software is updated and hardware issues are fixed, if and when they occur. 
+	-Retirement, in this final stage, hardware becomes unusable or no longer needed, and it needs to be properly removed from the fleet.
+	
+Routine Maintenance
+	Batch updates
+	
+Vendors
+	Commercial printers, Fax machine, ect..Sysadmins must procure, work with vendors/business, setting up business accounts that are needed by the company.
+	
+Troubleshooting and Managing Issues
+	Prioritizing issues at a large scale. Centralized logging. Customer Service/Empathy. Sometimes sysadmins available around the clock. Service monitoring. Ticketing or bug systems,  This helps you organize, and prioritize issues, and document troubleshooting steps.
+	
+In Case of Fire, Break Glass
+	Routinely backing up company data. 
+	
+Infrastructure Services/Cloud Services
+	IaaS, NaaS, SaaS, PaaS (infrastructure as a service, network as a service, software as a service, platform as a service)
+	Active Directory - DaaS (directory as a service)
+	
+Physical Infrastructure Services
+	Server Operating Systems - regular OS's that are optimized for server functionality. Allowing more network connections and more RAM capacity. Ubuntu Server, Mac OS server, dedicated server OS's
+	Virtualization - running multiple virtual instances on a virtual server
+	Remote Access - OpenSSH, 
+	
+Network Services
+	File Transfer Service, FTP/SFTP/TFTP
+	NTP - Network Time Protocol - Used to keep the clock synchronized on machines connected to a network. Public or Local (dedicated). 
+	DHCP and DNS
+	
+Troubleshooting a Network Connection
+	ping www.google.com, nslookup www.google.com (rule out the dns is an issue by verifying the host name points to a server)
+	
+Software Services
+	Communication - IRC (internet relay chat), Open IM protocols (XMPP), Configuring Email Services (domain name setup) local managed server or email service provider. POP3 (privacy, email can only be seen from local device, eases storage limitations), IMAP, SMTP (simple mail transfer protocol)
+	Security - HTTPS, TLS (Transport Layer Security), SSL (Secure Socket Layer, depricated to TLS), Certificate Authority to get https
+	Software - purchasing licenses
+	
+File Services
+	Cloud storage services (sync.com, pCloud, Tresorit, Dropbox, SugarSync, ect)
+	Network File System (NFS) - A protocol that enables files to be shared over a network. The file system is operational on all operating systems. /share directory. Good solution to file sharing within a network. Samba Services, all major OS's can use, works better w/ Windows, good for printer services. SMB (Protocol that Samba implements) Windows share service uses Samba protocol. Network attached storage (NAS) instead of setting up a dedicated server, pc's optimized for storage.
+	Configuring Print Services - Print Server to manage centraly and manage driver software. CUPS (common unix printing service). Cloud service provider to manage users for your printer.
+	
+Platform Services
+	Web Servers Revisited - Applications we use to develop and launch. Apache (HTTP Server) sudo apt-get install apache2 -y (Use to install a locally hosted web server)
+	What is a database server? - Allow us to store, query, filter, and manage large amounts of data. Database Administrators
+	
+Directory Services
+	Directory Server - Contains a lookup service that provides mapping between network resources and their network addresses.
+	Replication - The stored directory data can be copied and distributed across a number of physically distributed servers, but still appear as one, unified datastore for querying and administrating. Decreases latency. Flexibility.
+	Directory Services contains OU's (organizational units) in a hierarchal structure.
+	
+Implementing Directory Services	
+	Directory Access Protocol (DAP), Directory System Protocol (DSP), Direcotry Information Shadowing Protocol (DISP), Directory Operational Bindings Management Protocol (DOP), Lightweight Directory Access Protocol (LDAP). These are open standards for communication and acces for directory services.
+	
+Centralized Management
+	A central service that provides instructions to all of the different parts of my IT infrastructure. (Directory Services) Centralized authentication, authorization, and accounting, also known as AAA.
+	Access in an organization is usually based on user groups depending on their assigned roles/identities rather than individual users. This is called Role-Based Access Control (RBAC).
+	LDAP - AD and OpenLDAP. LDAP notation is used for entries in AD to describe attributes using values.
+	LDAP Authentication - Anonymous/Simple/SASL(simple authentication and security layer)
+	Kerberos - A network autherntication protocol that's used to authenticate user identity, secure the transfer of user credentials, and more.
+	Bind Operation - authenticates clients to directory server.
+	
+Active Directory
+	Speaks LDAP protocol. Central repo of group policy objects (GPO's), which are ways to manage the config of win. machines.
+	
+Data Recovery
+	Disaster plans should involve making regular backups of any and all critical data that's necessary for your ongoing business processes.
+	Post-mortem - is a way for you to document any problems you discovered along the way, and most importantly, the ways you fixed them so you can make sure they don't happen again.
+	
+	Backup System - Email databases, Sales databases, Financial spreadsheets, Server configurations, Databases.
+	
+	Backup Solutions - Onsite or self-managed data. Off-site storage - data is safer in multiple locations; needs security and encryption, needs large amounts of bandwidth. On deciding what are backup time periods? Archive older data via Magnetic Data Storage Tapes.
+	rsync - A file transfer utility that's designed to efficiently transfer and synchronize files between locations or computers. Supports compressions and uses SSH to securely transfer data over a network.
+	Backup and Restore - system image or file archive zip.
+	
+	Testing Backups - Restorations Procedures - Should be documented and accessible so that anyone with the right access can restore operations when needed. Regulary test documentation.
+	Disaster Recovery Testing - Should happen once a year or so against IT recovery teams ability to recover data against random natural events.
+	
+	Types of Backup - While a differential backup backs up files that have been changed or created since the last full backup, an incremental backup is when only the data that's changed in files since the last incremental backup is backed up.
+	File compression into archives.
+	Redundant Array of Independent Disks (RAID) - A method of taking multiple physical disks and combining them into one large virtual disk. (data storage solution not a replacement for backups)
+	User Backups - cloud storage, file hosting, ect..
+	
+Disaster Recovery Plan
+	A collection of documented procedures and plans on how to react and handle an emergency or disaster scenario, from the operational perspective. Before during and after disaster. Keeping downtime to minimum. 
+	Preventive measures - Any procedures or systems in place that will proactively minimize the impact of a disaster. Regular backups and redundant systems. Redundant power supplies, ect...
+	Detection measures - Are meant to alert you and your team that a disaster has occurred that can impact operations. Environmental sensors, flood sensors, temp and humidity sensors (failed cooling), smoke detectors, evacuation procedures.
+	Corrective or recovery measures enacted after a disaster has occured.
+	Single point of failure.
+	
+Designing a Disaster Recovery Plan	
+	Perform Risk Assessment - A risk assessment allows you to prioritize certain aspects of the organizations that are more at risk if there's an unforeseen event.
+	Determine Backup and Recovery Systems - Automated recovery backups and data recovery procedures.
+	Determine Detection and Alert Measures & Test Systems - Make sure alerts fire. Test reaction time and make sure employees respond accordingly.
+	Determine recovery measures - documentation to restore normal operations upon specific situations.
+	
+Post-mortem
+	We create a post-mortem after an incident, an outage, or some event when something goes wrong, or at the end of a project to analyze how it went.
+	The point is the learn something from an event or project. (root cause of mistakes). Report needs to be communicated. Helps encourage a culture of learning from mistakes and sets a good example for others to follow.
+	
+	Summary of incident - What the incident was - How long it lasted - What the impact was - How it was fixed - Dates, times, timezones
+	Detailed Timeline - every action taken in attempt to resolve the situation.
+	Root Cause - What lead to the issue. What can be learned?
+	Resolution and Recovery Efforts - More detail into recovery steps and rational why.
+	Actions to Avoid Same Scenario - Steps to improve response timeline.
+	What Went Well - Failsafes that worked, procedures that worked or demonstrated tangible benefit.
+	

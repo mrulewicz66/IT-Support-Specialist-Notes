@@ -1,0 +1,572 @@
+REGEX AND TEXT PROCESSING
+
+Working with Strings in Ruby - 
+	
+	String Indexing - String indexing allows you to extract or even change certain portions of the text within a string.
+	
+		str[start, length]
+		
+		str = "String beans are tasty!"
+		puts str[0,6]
+		->String
+		
+		str[0,6] = "Green"
+		puts str
+		->Green beans are tasty!
+		
+		Using this notation we can delete parts of strings using empty strings.
+		
+		str[0,6] = ""
+		puts str
+		-> beans are tasty!
+		
+		Insertions are also possible if you set the length portion of the string start length range to 0.
+		
+		str[16,0] = " very"
+		puts str
+		->String beans are very tasty!
+		
+		Extract single characters. When you use negative numbers in a string and array indexing, you're telling Ruby that you want to start counting from the last character of the string instead of the first.
+		
+		puts str[-1]
+		->!
+		
+		This works for indexing sequences of characters too.
+		
+		puts str[-6,6]
+		->tasty!
+
+		Range objects can be provided to string indexes to retrieve sequences of characters. With a range you specify two indexes Start and Finish.
+		
+		puts str[7..10]
+		->bean
+		
+		puts str[-6..-1]
+		->tasty!
+
+	String Substitution - Replace one string with another using sub method that uses two arguments (word we want to sub, word to sub with). Doesn't modify in place but instead return new string with sub performed.
+	
+		str = "Supercalifragilisticexpialidocious even though the sound of it something quite attrocious"
+		
+		new_str = str.sub("atrocious", "delightful")
+		puts new_str
+		->Supercalifragilisticexpialidocious even though the sound of it something quite delightful
+		
+		Ruby also provides a version of the sub method, which performs the in place substitution called sub!
+		Remember that in Ruby, methods who modify the object that they are called on are defined with the exclamation point in their names. Also, sub method only replaces first instance of matching string.
+		
+		To perform a substitution on all strings you want to replace within a given piece of text use the gsub method.
+		
+		str = "It was the best of times, it was the worst of times."
+		new_str = str.gsub("times", "bananas")
+		puts new_str
+		->It was the best of bananas, it was the worst of bananas.
+		
+		Sometimes you'll just want to see if a piece of text contains a given substring. To test this, you can use the Include? method.
+		
+		str = "Does this text contain a special string?"
+		puts str.include?("special")
+		true
+		puts str.include?("ordinary")
+		false
+		
+		When combined with the branching logic of an if statement, this method can be used in your scripts to make decisions based on the contents of strings.
+		For example, this code snippet checks the contents of the variable message for an error. If it finds one, it raises an error to stop the program.
+		
+		message = "[log message] ERROR: 418 - I'm a Teapot"
+		if message.include("ERROR")
+			raise "An unexpected error occurred: #{message}"
+		end
+		
+		It's good to know that Ruby's raise method is one way a programmer can cause their programs to crash and exit intentionally. It may be better for it to stop, rather than keep running in a bad state.
+		
+	More String Methods - 
+	
+		puts "monday".capitalize
+		->Monday
+		
+		puts "MONDAY".downcase
+		->monday
+		
+		puts "monday".reverse
+		->yadnom
+		
+		puts "This string is 33 character long".length
+		->33
+		
+		puts "The number of times e occurs in this string is 4".count("e")
+		->4
+		
+		The chomped method will remove specific characters from the end of a string, which by default, include the \n, \r, and \r\n separator characters. The \r character indicates a carriage return, which means that the cursor should be moved to the beginning of the line. And the \n is a new line separator, indicating the cursor should be moved to a new line.
+		
+		These separator characters can sometimes get in the way when we want to perform text processing in our scripts.
+		
+		input = gets
+		->hello?
+		->"hello?\n"
+		puts input.length
+		->7
+		->nil
+		input.dump
+		->"\"hello?\\n\" // This separator is included in the string, because when we hit the Enter key on the terminal, that gets method records that as input, and represents it by using a new line.
+		
+		To get rid of this extra character we can use chomp. It will remove the given substring from the end of the string, if it's there.
+		
+		chomped_input = input.chomp
+		->"hello?"
+		puts chomped_input.length
+		->6
+		puts chomped_input.dump
+		->"hello?"
+		
+		str = "Hello world!"
+		chomped_str = str.chomp("world!")
+		->"Hello "
+		puts chomped_str
+		->Hello
+		
+		If you just want to remove the last character in a string without exception, you can use that chop method instead of chomp.
+		
+		str = "hello?"
+		puts str.chop
+		->hello
+		
+		The strip method will return a copy of the string it's called on stripped of all white space on beginning and end. Will remove special character like \r and \n, horizontal and vertical tabs, and null characters.
+		
+		str = "		oh hello!		"
+		puts str.strip
+		->oh hello!
+		
+	
+Regular Expressions - Regex or regexp is essentially a search query for text expressed by a string pattern. When you run a search against a particular piece of text, anything that matches the regular expression pattern you've specified is returned as a result of the search. Regular expressions allow you to answer questions like, What are all of the four-letter words in a file? or Give me all of the email addresses in a request log.
+	
+	Why use regular expressions? - Will work regardless of file changes that may happen over time.
+
+		Basic Syntax - /Ruby/ uses slash symbols as delineator similar to how string objects are delineated by the quotation marks.
+
+		The easiest and fastest way to find out if a regular expression pattern matches a string is to use this basic pattern matching operator. If the pattern does match, this operator will return the starting position of the substring that matched the pattern. If there's no match, it will return nil. 
+		
+			puts /Ruby/ =~ "The word Ruby is contained in this text."
+			->9
+			
+		Ruby regular expressions reserve several characters that can give extra meaning to the patterns that you're creating. 
+			
+			pattern = /t?igers/
+			puts pattern =~ ("tigers")
+			->0
+			puts pattern =~ ("ligers")
+			->1
+			puts pattern =~ ("bears")
+			->nil
+		
+		The ^ and $ anchor characters which indicate that the regexp should match from either the beginning or the end of the line respectively. You could use these anchors to match only words that start with the letter x or end with the letter z. The ^ and $ specifically match the start and end of a line, not a string.
+		
+			puts /^x/ =~ "xylem"
+			->0
+			puts /^x/ =~ "foxes"
+			->nil
+			puts /z$/ =~ "quiz"
+			->3
+			puts /z$/ =~ "zanzibar"
+			->nil
+		
+		If you have a string that spans multiple lines, you can use the \A and \Z anchors to match the start and end of the whole string, not just the line.
+		
+		Ruby regular expressions can also accept modifier characters after their final forward slash, which can be used to further refine how the pattern matching is to be done.
+		
+		One useful modifier is the i character, which ignores case when performing a match.
+		
+			puts /yelling/i =~ "I'm not YELLING!"
+			->8
+			puts /yelling/ =~ "I'm not YELLING!"
+			->nil
+			
+		Another special character that can come in handy is the dot symbol. Usually dubbed a wildcard, the dot character can be use to match almost any character you'd like.
+		
+			/.ig/ =~ "wig"
+			->0
+			/.ig/ =~ "pig"
+			->0
+		
+		You can combine special characters, anchors, and modifiers as needed to create patterns to match the text you want. For example, this regexp will match any word that ends in ickle, ignoring case.
+		
+			/.ickle$/i =~ "triCKle"
+			->1
+			/.ickle$/i =~ "trickle"
+			->0
+			/.ickle$/i =~ "TRICKLE"
+			->1
+			/.ickle$/i =~ "tricycle"
+			->nil
+			/.ickle$/i =~ "trickles"
+			->nil
+			
+		Regular expressions also support the concept of repeated matches.
+		
+		Repetition symbols include both the + character, which means match one or more occurrences of the preceding character, and the * symbol, which means matches 0 or more occurrences of the preceding character. For example, using the 0 or more occurrences operator of *, we can match the following strings.
+
+			/p*ickle/ =~ "pickle"
+			->0
+			/p*ickle/ =~ "pppppickle"
+			->0
+			/p*ickle/ =~ "ickle"
+			->0
+		
+		As the + operator indicates, we want one or more occurrences, it's a little more strict since at least one repetition must occur for a match to be found. 
+		
+			/p+ickle/ =~ "pickle"
+			->0
+			/p+ickle/ =~ "pppppickle"
+			->0
+			/p+ickle/ =~ "ickle"
+			->nil
+		
+		When you used with the wildcard symbol, the repetition character can match a pattern containing any number of characters. This pattern will match any string, no matter how long, as long as it starts with a capital A and ends in a lowercase a. 
+		
+			/^A.*a$/ =~ "Albania"
+			->0
+			/^A.*a$/ =~ "Argentina"
+			->0
+			/^A.*a$/ =~ "Afghanistan"
+			->nil
+		
+		Remember that since * means 0 or more matches, this string would also match the string Aa. 
+			
+			/^A.*a$/ =~ "Aa"
+			
+		If you needed to match a string containing one of those special characters themselves, like $ or This can be done through the concept of the escape character, represented by the /.
+		
+			/$/ =~ "$10.00"
+			->6
+		
+			As you can see, the $ symbol is evaluated by Ruby to match the end of the string. In this case, the string is 6 characters long. So the value of 6 is returned to represent the position of the last character.
+			
+		To match the $ symbol itself, in this case the first character, you can escape it in the regexp.
+		
+			/\$/ =~ "$10.00"
+			->0
+			
+		Escaping works for forward slashes, too, which are usually used to delineate the bounds of the regular expression itself. First unescaped expression results in an error, while the second matches the forward slash character in the string literally. 
+		
+			/// =~ "forward/slash"
+			->SyntaxError...
+			/\// =~ "forward/slash"
+			->7
+		
+		Finally, it's important to call out that the Ruby regexp class supports another way of specifying regular expressions, along with the forward slash syntax we've seen so far.	
+			
+			%r{/} =~ "forward/slash"
+			->7
+			
+			If you begin your regular expressions with the %r symbol, you can use whatever delimiter you want instead of forward slashes. This can come in handy when your pattern might need to match on many forward slash characters, like a Windows directory path, and you don't want to escape them all.
+			
+			
+	Advanced Matching - The match method is called with the string to match the pattern against and an optional positional argument to specify where in the string to start the search.
+		/R.*y/.match("Ruby", 1)
+		
+		If no match is found, nil is returned, as with the approximately equals operator. If a match is found, instead of the starting position of the matched text, the match method returns an object of the MatchData class.
+		
+		This MatchData object contains all of the information resulting from a Regex pattern match, like the Regexp used, the original string, the matched and unmatched portion of the string, and more.
+		
+			m = /Ruby/.match("Scripting with Ruby!")
+			->#<MatchData "Ruby">
+			puts m.string
+			->Scripting with Ruby!
+			m.regexp
+			->/Ruby/
+			
+			First, you can print the original string you were searching for in your pattern with the string method. Similarly, you can print the pattern you were looking for with the Regexp method.
+		
+		To see the string that matched your pattern, you can use MatchData's to_s method. MatchData also provides methods for checking out the text before and after the match.
+		
+			puts m.to_s
+			->Ruby
+			puts m.pre_match
+			->Scripting with
+			puts m.post_match
+			->!
+			
+		You can also give the match method a block, just like we've seen before with iteration and looping. The MatchData object will be passed to the block, where you can manipulate it as needed.
+		
+			/Ruby/.match("Scripting with Ruby!") do |m|
+				puts m.to_s
+			end
+			->Ruby
+			
+			/Emerald/.match("Scripting with Ruby!") do |m|
+				puts m.to_s
+			end
+			->nil
+		
+		Another super useful feature of MatchData objects is that they also separate any MatchData captured in parenthetical groups. Regular expression patterns can be grouped using parentheses, usually called capture groups, like this. 
+			
+			m = /(abc).*(123).*/i.match("abcdefg1234567")
+			-> #<MatchData "abcdefg1234567" 1:"abc" 2:"123">
+			
+				We can see this by utilizing the captures method of the resulting MatchData object.
+			
+				The inspect method just gives you a representation of the object it's called on, in this case, showing that m.captures returns an array.
+			
+			puts m.captures.inspect
+			->["abc","123"]
+			
+				You can also access the capture information contained in a MatchData object by indexing into it. The first element contains the text matched by the entire regular expression. Each successive element contains data that was matched by every subsequent match group.
+			
+			puts m[0]
+			->abcdefg1234567
+			puts m[1]
+			->abc
+			puts m[2]
+			->123
+			
+			
+	Character Classes -  Delineated by square brackets in a regexp, allow you to match against the set of characters contained within them.  Which will match, both the strings, capital R ruby, and lowercase R ruby.
+		
+		regex = /[Rr]uby/
+		->/[Rr]uby/
+		m1 = regex.match("Ruby")
+		->#<MatchData "Ruby">
+		puts m1.to_s
+		->Ruby
+		m2 = regex.match("ruby")
+		->#<MatchData "ruby">
+		puts m2.to_s
+		->ruby
+	
+		You can use a dash to specify a range of characters in your character classes. For example to write any number between 0 and 9 you could write this.
+			
+			m = /[0-9]/.match("2")
+			->#<MatchData "2">
+			puts m.to_s
+			->2
+			
+		This example matches any lower case letter and any number between zero and nine.
+		
+			puts /[a-z0-9]/.match("a").to_s
+			->a
+			puts /[a-z0-9]/.match("5").to_s
+			->5
+			
+		Ruby also offers some specialized metacharacters that behave like character classes. These can be used as shortcuts to match specific types of text.
+		
+		Instead of using the square brackets syntax to match a numeric digit, you could use the /d metacharacter.
+		
+			puts /\d/.match("5").to_s
+			->5
+			puts /\d/.match("a").to_s
+			->nil
+			
+		 These become even more useful when you combine them with the repetition functionality to match exactly any three numbers.
+		 
+			puts /\d{3}/.match("123").to_s
+			->123
+			puts /\d{3}/.match("123456").to_s
+			->123
+			
+		
+	Regex and String Methods - By adding regex we can make substitutions based on patterns.
+		s = "You say tomato, I say tomahto"
+		puts s.sub(/tomah?to/, "banana")
+		->You say banana, I say tomahto
+		
+		puts s.gsub(/tomah?to/, "banana")
+		->You say banana, I say banana
+		
+		You can also iterate throughy a string using regular expressions and the scan method, which accepts a regexp as an argument. This means that you could iterate through each letter in a string using the wildcard character in this snippet.
+		
+			"Ruby".scan(/./) do |letter|
+				puts letter
+			end
+			->R
+			->u
+			->b
+			->y
+			
+		 You can use split to chop up a string into an array, using either a character or regular expression to tell Ruby where to do the splitting.
+
+			octets = "192.168.1.1".split(/\./)
+			octets.each { |octet| puts octet }
+			->19
+			->168
+			->1
+			->1
+			
+			Here, we've passed a regular expression that matches the dot character literally, because we've used the slash to escape it. Split uses this pattern to break the string into chunks. This gives us each octet stored in an array, which we can then print. 
+		
+	
+Log File Processing 
+
+	Processing Log Files -  A common technique we can use is the Open Method from the File Class to load a file into a program and iterate through each of its lines using the each iterator. For example, to open the file located at the absolute path, /var/log/syslog, we could use this code.
+	
+		File.open("/var/log/syslog").each do |line|
+			puts line
+		end
+		
+	Narrow files down.
+
+		File.open("/var/log/syslog").each do |line|
+			if line.include?("CRON")
+			//# process the file//
+			end
+		end
+		
+	Process the file code.
+	
+		m = /\((._)\)$/.match(str)
+		puts m.captures
+		
+		To improve our output even more, it will be good to have a count of how many times each user name appears in our log. We can do this by using the hash data structure we talked about in our first week along with a little creativity.
+		
+		We can create new hashes similar to how we create new arrays but with curly braces instead of square brackets. But by using the new method of the Hash class, we can actually supply a default value for all of the keys in the Hash. For example, we could specify a default value of zero by writing this. This will come in handy when we apply hashes to our current task of retrieving username counts.
+		
+			h = Hash.new(0)
+			
+		If we had a Hash containing usernames as keys and counts as values, we could increment the value associated with the admin key by one through this code snippet.
+		
+			usernames =  {"admin" => 0}
+			->{"admin" =>0}
+			usernames["admin"] += 1
+			->1
+			puts usernames
+			->{"admin" =>1}
+			
+		Armed with this insight into Hashes, we can modify our code a little to record the count of usernames in the log file. 
+		
+			usernames = Hash.new(0)
+		
+			File.open("/var/log/syslog").each do |line|
+				if line.include?("CRON")
+					m = /\((._)\)$/.match(line)
+					username = m[1]
+					usernames[username] += 1
+				end
+			end
+			
+		First, we've added a user named variable to hold the user named text matched by our RegExp. When you use capture groups in a RegExp, the text matched by each group is stored in an array with the first element containing the entire string we're searching. Since we've got one capture group in our RegExp here, we can access the text matched by the capture group by indexing into the second element of the array using the index of one. We can use this username value to then access our Hash. Remember that in a Hash, when we access an element using a key that doesn't exist, the default value is returned, in this case zero. We increase the value of the key identified by the text in user name by one each time we match it. This gives us the count of each user name in the log file. 
+		
+		You've now got a good idea of who and at what frequency has been starting cron jobs on the server and can investigate the issue more deeply using this information. 
+		
+		
+	Commnand Line Text Processing
+	
+		You can use the grep command on Unix like systems to perform text searches in files.
+			
+			grep naught_user /var/log/systemlog | wc -last
+			->3
+			
+			To get a count of the number of times that user name shows up in the log file, you could pipe the output of the grep command to the word count, or WC, command. Using the -l flag to indicate you'd like to count the number of lines instead of words.
+			
+		Grep also supports searching using regular expressions, meaning we can approximate the script we wrote in our previous videos using something like this.
+		
+			grep CRON /var/log/systemlog | grep -oE '\((.+)\)$'
+			(good_user)
+			(naught_user)
+			(naught_user)
+			(naught_user)
+			
+			The first grep command in the pipeline finds all of the files in the log file it CRON in them. The next uses of regular expression to match the usernames, the -E flag indicates we want to use extended regular expressions. And the -O flag means we want to print only the matching parts of the line to the screen.
+			
+		Along with saving scripts to a file, Ruby also offers system administrators the ability to process text from the command line itself, without having to go through the trouble of writing and saving a new script file.
+
+		-e, this flag lets us execute code we pass directly into Ruby on the command line, without the need to save it in the disk first. 
+		
+			ruby -e 'puts "This is pretty cool"'
+			->This is pretty cool!
+			ruby -e 'puts 1+1'
+			->2
+
+		Next if we want to process our log file we want to be able to read each line we get from the standard N stream, the flag to do this is -n. This flag tells Ruby that we want to apply our code to each line of STDIN until there's no more. You can think of it as being equivalent to this while loop.
+		
+			while gets
+				# Process the line here with the code given by the -e flag
+			end
+		
+		Ruby stores each line of the output in a special variable called $_
+		
+			cat /var/log/systemlog | ruby -ne 'if $_.include?("CRON") then m = /\((.+)\)$/.match($_); puts m.captures end'
+			->good_user
+			->naughty_user
+			->naughty_user
+			->naughty_user
+
+			
+Other Data Formats - 
+
+	Reading CSV files - CSV stands for Comma-Separated Values, and as a data format which represents data as segments of text, separated by commas. CSV files are stored in plain text, and each line in a csv file generally represents a single data record. Each field in that record is seperated by a comma. 
+		
+		require "csv"
+		CSV.foreach("csv_file.txt") do |line|
+			puts line.inspect
+		end
+		
+		Here, we use the inspect method to show that the CSV data, is now in array form, with each array corresponding to a line in the CSV file, and each element in the array, corresponding to one of the fields in that line.
+	
+	If you want to read and parse the contents of the entire file, the CSV class provides a read method which can accomplish this. The return value of the CSV read method is an "array of arrays", which means that several inner arrays are nested inside an outer one.
+	
+		puts people[0].inspect
+		->["Ruby Python", "802-867-5309", "IT support specialist"]
+		
+	If you wanted to access a particular element inside of this inner array, you can extend the same technique.
+		
+		puts people[0][0]
+		Ruby Python
+	
+	
+	Searching CSV files - You can use the find or find_all methods to search for something within the CSV data.
+		
+		people.find { |person| person[0] =~ /^Perl/ }
+			puts pearl.inspect
+		["Perl Ewhytes", "846-687-7436", "Programmer"]
+	
+	
+	Modifying CSV files - We can add rows of CSV data with the add_row method from the CSV class. 
+		
+		require "csv"
+		
+		CSV.open("csv_file.txt", "a") do |people|
+			new_person = ["Rusy Haskell", "698-369-1247", "SRE"]
+			people.add_row(new_person)
+		end
+		
+		The important difference between file.open and CSV.open, is that with File.open, you append strings to a file. With CSV.open, you append rows, which are represented as arrays.
+		
+		We also used the A file mode to open the CSV file, which stands for append. Using this mode means you want to add rows to the end of the file. 
+		
+		The data itself is in a ray, stored in the new person variable. The add row method accepts this array, and automatically converts it to CSV format for us, inserting commas after each elements.
+	
+	
+	CSV Summary - Knowing how to work with csv files can be super useful and demonstrate some of the capabilities that Ruby can provide your scripts for working with many different data formats. Many programs are capable of exporting data in csv files including spreadsheet applications like Microsoft Excel or Google sheets. It can be helpful to think of a csv file in terms of a spreadsheet, where each line corresponds to a row and each comma-separated field corresponds to a column. Along with the csv module in the Ruby standard library, there are several gems that can be installed to parse csv files like fastercsv. Gems can be a great way to extend the data processing functionality of your scripts, especially for more complex data formats. In the next few videos, we'll check out one gem, which can be used to parse the html data that makes up most of the content on the web. 
+	
+
+	HTML processing - Parsing HTML documents comes in handy if you need to extract data from one or many pages on a website, where reading each page would be time-consuming.
+		
+		curl www.google.com | grep google
+		
+		Check out this pipeline, it will retrieve the Google Search homepage using the curl command, and pipe into grep to look for instances of the word Google.
+	
+	
+	HTML Parsing Libraries - Nokogiri, can be used to parse HTML along with several other data formats.
+	
+		Gem intall Nokogiri
+			require "Nokogiri"
+		
+			html_page = Nokogiri::HTML("<html><title>A miniscule HTML page<title/></html>")
+		
+		More often than not, you'll want to access HTML-formatted data from an external source rather than a string.
+		
+			require 'nokogiri'
+			require 'open-uri'
+			
+			html_page = Nokogiri::HTML(open("http://www.google.com/"))
+				puts html_page.title
+	
+			The open method from the OpenURI library lets us access webpages by their URL, which we can then work with as if they were files. 
+	
+			In this case, we pass the HTML text contents of http://www.google.com to the Nokogiri HTML module which parses the page.
+
+			If we wanted to retrieve the text between any HTML tag, though, we can use the CSS method Nokogiri provides.
+			
+				puts html_page.search("p")
+				-><p>It is a very small file, indeed.</p>
+				
+			

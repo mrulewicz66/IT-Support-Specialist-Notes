@@ -1,0 +1,243 @@
+INTRODUCTION TO AUTOMATION - Week2
+
+Libraries - load, require, and include methods.
+
+	Require (re) - include other files into Ruby code. re "./file_name" (./ current working directory, absolute path)
+	
+	Join - is a method that some objects, like arrays, can use to combine the contents together into a single string bsed on siome delimiter.
+
+	Load - Code imported with the load method will be reprocessed each time load is used, while require keeps track of what it has imported and makes sure it's done only once.
+	
+	Modules - Can be used to organize classes, methods, and other data together, in a structured way. Modules are not classes. Ability to create namespaces and mixins.
+	
+	Namespaces - Naming Collision 
+	
+	Mixins - You can use mix in's to extend the functionality of a class with all of the methods you define in the module. You mix a module into your classes by using the include keyword. The module's methods are made available to all of the classes that include them.
+	
+	Librarires - A collection of code, likely organized into multiple modules, that can be reused by any program that imports it.
+	
+		require "net/http"
+			puts Net::HTTP.get("www.google.com", "/")
+			
+	Packages - gem list
+	
+Programming with files - Reading or writing, Renaming directories, and Copying data.
+
+	Relative path -  current working directory. Shortcut from using full file path.
+	
+	Reading files - -File Class-
+	
+					file = File.new("birthday_song.txt")
+					puts file.gets
+					file.close
+					
+					-Open Method-
+					
+					File.open("birthday_song.txt") do |file|
+					puts file.gets
+					end
+					
+					-Loop through file-
+	
+					File.open("birthday_song.txt").each do |line|
+					puts line
+					end
+					
+					-This line would produce an array with each line found in the birthday_song.txt file as a separate element.-
+					
+					array_of_lines = File.readlines("birthday_song.txt")
+	
+	Writing files - File.open("novel.txt", "w") do |file|
+					file.puts "It was a dark and stormy night."
+					end
+					
+		Mode - Is a kind of like a file permission, which governs what you can do with the file you've just opened.	"w" tells file class we want to open it for writing only. If the file doesn't exist, Ruby will create it.
+		
+	Working with Files - To delete by iterating through array.
+	
+		files_to_delete = ["useless_file.txt", "pointless_file.txt", "unnecessary_file.txt"]
+		files_to_delete.each do |file|
+		end
+		
+		Renaming a file - File.rename("first_draft.txt", "finished_masterpiece.txt")
+		
+		Size of file - puts File.size("birthday_song.txt")
+		
+		Time file last modified - puts File.mtime("birthday_song.txt")
+		
+		Exists? method - if File.exists?("should_be_there.txt")
+							puts "Whew, the file is there!"
+						end
+		//methods suffixed with ? return boolean value//
+
+		Exists? Can be used for all kinds of things like verifying a logfile is present before trying to write to it, or checking that a given file hasn't been created yet so you don't overwrite it.
+		
+		Expand_path - puts File.expand_path("birthday_song.txt")
+						/home/user/scripts/m2/birthday_song.txt
+						
+			This method will turn it into an absolute path. Ruby will use the current working directory, from where the script is being run, to start looking for the file and construct the full path that identifies it.
+			
+			puts File.basename("/www/website/indes.html", ".html")
+			
+			puts File.dirname("/www/website/index.html")
+			
+	Directories -  As with files, Ruby provides a built-in class with which you can create, delete, and browse the contents of directories. This is done with the Dir class.	
+	
+		To check the current directory a Ruby program is executing within, you can use the pwd method. puts Dir.pwd
+			
+		Change directories chdir. Dir.chdir("new_dir")
+		
+		Make/Remove dir. Dir.mkdir("even_newer_dir"), Dir.delete("even_newer_dir")
+		
+		Entries - This method will return an array, each element of which will be a file or subdirectory within the current directory.
+		
+		 Dir also provides a shortcut to iterate through each element of a directory with the foreach method. 
+			Dir.foreach("website") do |entry|
+			puts entry
+			end
+	
+		Dir.glob("**/*.txt") -  Using the star star characters as the first part of the pattern tells Ruby that you want to search the directories recursively, which means that it will look in all of the directories in a tree no matter how many there are.
+
+Scripting Pipelines
+
+	Intro to I/O Streams - The basic mechanism for performing input and output operations in Ruby scripts.
+	
+	Standard in-stream (STDIN) - channel between program and source of input.
+		standard_input = gets.chomp
+
+	Standard out-stream (STDOUT) - is a pathway between a program and a target of output like a display.
+		standard_output = "This is displayed using the STDOUT I/O stream"
+	
+	Standard Error (STDERR) - Used specifically as a channel to show error messages and diagnostics from the program, usually to the screen.
+		puts 1 + "This error is displayed using the STDERR I/O stream"
+		
+	Redirecting Streams - Sending I/O streams to any kind of destination.
+		
+		To redirect the standard output of a program to a different destination, you can use the greater than symbol; Each time you perform a redirection of standard out, the destination is overwritten.
+			ruby stdout_example.rb > new_file.txt
+			
+		If you wanted to append the redirected standard out to the file, you could use the greater than greater than sign instead of a single grade than.
+			ruby stdout_example.rb >> new_file.txt
+			
+		Instead of using the keyboard to send data into a program, you can use the less than symbol like this. In this command, the file sometext.txt is sent through standard in to the text_processor.rb script which can then perform actions on its contents.
+			ruby text_processor.rb < sometext.txt
+		
+		It can also be super useful to redirect standard error to capture errors and diagnostic messages from a program. This can be done using the two greater than characters in a similar way to how we redirected standard out earlier.
+			ruby buggy_program.rb 2> error_file.txt
+			/// Here, the two represents the file descriptor of the standard error stream.///
+			
+		You may want to capture all of the output of a program including both the normal operating output and any error messages that are produced. This can be done using the ampersand greater than symbols in this way. With that command, any output including errors will be sent to the all_output.txt file. Like using the regular output redirection operator greater than, this will overwrite the file's contents each time and create a new file if one doesn't already exist.
+			ruby buggy_program.rb &> all_output.txt
+			
+		You can even redirect I/O streams to other streams. So, let's say you wanted to redirect both standard out and standard error as above, but instead of overwriting the file, you want to append to it.
+			ruby buggy_program.rb >> all_output.txt 2>&1
+		
+	Pipes and Pipelines - another powerful way to perform I/O stream redirection. Using pipes, you can connect multiple scripts, commands, or other programs together into a data processing pipeline. Pipes connect the stadard in of one program to the standard out of another, which means you can pass data between programs feeding the output of one to the input of the next. 
+		grep "somestring" system.log | sort | uniq -c | sort -n
+		
+		ARGF.each do |line|
+			puts line.capitalize
+		end
+		
+		cat haiku.txt | ruby capitalizer.rb
+	
+Subprocesses
+
+	Running System Commands in Ruby - 
+	
+	Scripting Subprocesses - When you run a Ruby script, you can think of the currently executing script as the parent process. When the code in your script executes an external command, a child process is created.
+	
+		success = system("chmod", "777", "somefile.txt")
+		
+		The first argument in the system method indicates which command should be run and subsequent arguments are treated as command line flags.
+		
+		chmod 777 somefile.txt
+		
+		The system method will return TRUE when the command that it's running returns a zero exit status, and FALSE if the exit status is non-zero. The zero exit status of a child process usually indicates success, while a non-zero status generally indicates some kind of failure with the number returned providing more information. The Ruby system method is useful if we just want to run a command and determine whether or not it was successful. This can come in handy for system commands without much useful output like chmod, but if we wanted to capture the output of some external command, we need a different strategy
+	
+	Backticks - Another way terminal commands can be executed through a subprocess.
+		$? stores the status of the last executed child process.
+		
+		if $?.success?
+			puts "command succeeded!"
+		else
+			puts "command failed!"
+			
+		You can also use the %x character as an alternative to backticks. It will return the output of the command and set the dollar sign question mark variable, too.
+		 
+		puts %x(date)
+		
+		This is an easy way to execute commands and get both their output and return codes.
+		
+		You can redirect standard error to the same place as standard out by using the two greater than ampersand one symbols.
+		
+		output = 'lazy 2>&1'
+		puts output
+		puts "continuing on our merry way..."
+			
+	
+	Open3 -  A solution to get both the standard error, standard out and return code from a finished sub process without having to resort to redirection.
+	
+		require "open3"
+		
+		stout, stderr, status = Open3.capture3("ls", "-l")
+		puts stdout
+		
+		Multiple Assignment - lets you assign values to multiple variables at once on a single line.
+	
+	When to Use Subprocesses - Any change to the system or the external commands your scripts utilize is an opportunity for breakage, which can somtimes be subtle and hard to detect.
+	
+	If you want to run a system command and only need to know whether or not it succeeded, use the system method. If you want to quickly run a command and capture its standard output, use backticks -- as long as you're ok with the script failing if the command doesn't succeed.
+	
+	If you need to capture both standard output, standard error, and the return status, import the open3 module and use the capture3 method.
+	
+Writing a script from the ground up
+
+	Introduction - You've seen how to extend the usefulness of your scripts by importing external code and using libraries. You've performed I/O operations with files, and manipulated directories, run external commands using subprocesses, and constructed I/O pipelines to process data.
+	
+	Problem Statement - We need to write a scipt to automatically ping each IP address on the network.
+	
+	Research - How big is the Network? We have to know which addresses we should be pinging. IP addr class
+	
+	Planning - What subtasks need to be performed? 
+		First, we know that we'll need to compute the range of addresses in the network in order to make sure we scan them all. This will involve using the IP Addr class to make a list of addresses we need to scan which can be stored in an array to later iterate over.
+	
+		We also know that we'll need to use the net-pinglibrary to test each of these addresses in order to see if they are up. Storing the active addresses seems like another task for an array.
+		
+		Finally, we'll want a way to get this information out of the script. Printing it to the screen would be one way, but since a list of addresses was requested it would be even better if we could save them to a file that could be emailed or printed.
+		
+		Given all this let's split our script into 3 methods.
+			Calculate the address range
+			Test each address
+			Save active addresses
+	
+	Writing the Script - 
+	//////////////////////////////////////////////////////	
+		require "ipaddr"
+		require "net/ping"
+		
+		def calculate_network_range(ip, mask) 
+			address = "#{ip}/#{mask}"
+			# transform values with map
+			ip_range = IPAddr.new(address).to_range.map { |ip_object| ip_object.to_s }
+		end
+		
+		def scan_range(ip_range)
+			# filter values with select
+			active_ips = ip_range.select { |ip| Net::Ping::External.new(ip).ping? }
+		end
+
+		def write_to_file(active_ips)
+			File.open("active_ips.txt", "w") do |file|
+				active_ips.each do |ip_address|
+					file.puts ip_address
+				end
+			end
+		end
+
+		range = calculate_network_range("192.168.1.1", "255.255.255.0")
+		active_ips = scan_range(range)
+		write_to_file(active_ips)
+	/////////////////////////////////////////////////////
+	
+	Command-line arguments - to further automate

@@ -1,0 +1,77 @@
+UNDERSTANDING SECURITY THREATS
+	
+	Malicious Software
+	
+		The CIA Triad
+		
+			CIA (Confidentiality, Integrity, Availability) Triad
+		
+		Essential Security Terms
+		
+			0-day vulnerability
+			
+				A vulnerability that is not known to the software developer or vendor, but is knows to an attacker.
+		
+		Malicious Software
+		
+			Virus, worm, adware, spyware, trojan, rootkit, backdoor, botnet, logic bomb,
+
+	Network Attacks
+	
+		Network Attacks
+		
+			DNS Cache Poisoning attack - tricking a dns server into accepting a fake dns record that will point you to a compromised dns server. It then feeds you fake addresses when you try to access legit websites. It can also spread to other hosts w/ access to that server.
+			
+			Man-in-the-middle attack - places the attacker in the middle of two hosts who think they're communicating directly w/ eachother. Potentially modifying it in transit.
+			
+				Rogue AP - An access point that is installed on the network without the network administrator's knowledge.
+				
+				Evil Twin - Similar to rogue AP, creates an identiacal network to trick users to login controlled by attacker who's able to monitor traffic.
+			
+		Denial-of-Service (DoS)
+		
+			An attack that tries to prevent access to a service for legitimate users by overwhelming the network or server.
+			
+			Ping of Death (POD) - Sends a malformed ping to a computer, the ping would be larger in size that what the internet protocol was meant to handle, resulting in a buffer overflow. This can cause the system to crash and potentially allow the execution of malicious code.
+			
+			Ping Flood - Sends tons of ping packets through a system through ICMP echo requests since the server responds w/ an equal number of ICMP echo replies. If a computer can't keep up with this it's prone to being overwhelmed and taken down.
+			
+			SYN Flood - Bombard SYN/ACK requests to overwhelm system. Refered to as Half-open attacks.
+			
+			Distributed denial-of-service attack (DDoS) - A DoS attack using multiple systems usually utilizing an IoT botnet.
+	
+	Other Attacks
+	
+		Client-Side Attacks
+		
+			 A common security exploit that can occur in software development and runs rampant on the web is the possibility for an attacker to inject malicious code. We refer to these types of attacks as injection attacks.
+			 
+				filter
+				
+				Cross-site scripting (XSS) attacks - A type of injection attack where the attacker can insert malicious code and target the user of the service.
+					
+				SQL injection attack -  Unlike an XSS that targets a user, a SQL injection attack targets the entire website if the website is using a SQL database. Attackers can potentially run SQL commands that allow them to delete website data, copy it, and run other malicious commands.
+		
+		Password Attacks
+		
+			Utilize software like password-crackers that try and guess your password.
+			
+			Brute Force Attack - continuously tries different combinations of character and letters until it gets access. Usually takes a while to do this.
+			
+			Dictionary Attack - tries out words commonly used as passwords.
+		
+		Deceptive Attacks
+		
+			Social Engineering - An attack method that relies heavily on interactions with humans instead of computers.
+			
+			Phishing Attack - Trick to gain access to information, credentials.
+			
+			Spear Phishing - Specifically targets and individual or group.
+			
+			Spoofing - A source masquerading around as something else.
+			
+			Baiting - Enticing a victim to do something.
+			
+			Tailgating - Gaining access into a restricted area or building by following a real employee in.
+			
+			

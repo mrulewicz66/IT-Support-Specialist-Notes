@@ -1,0 +1,95 @@
+MONITORING GRADED ASSESSMENTS
+	
+	Monitoring Basics with Prometheus
+	
+		As an IT Support Specialist, it’s super important to have insight into the performance of the machines in your infrastructure. This will allow you to gauge the health of the fleet and its capacity requirements.
+		
+		In this lab, you'll set up Prometheus monitoring to track host-level metrics, like Disk and CPU usage. You'll also configure an alert to send you an email when the CPU utilization crosses a certain threshold.
+		
+		Step 1: Connect to the Prometheus host
+		
+			Prometheus takes its instructions from a yaml file. We've provided a basic Prometheus configuration file in the directory /share. So, let's first take a look at the config file using your favorite text editor. i.e. to use nano:
+			
+			nano /share/prometheus.yml
+			
+		Step 3: Start node exporter
+		
+			You've installed the node exporter module for Prometheus, which surfaces important information about the machine it's running on. To use node exporter, start the process and send it to the background using the &:
+			
+			node_exporter &
+			
+			Head's up: After placing a service in the background, you'll need to hit the ENTER key one more time before getting back to a standard prompt.
+
+			After starting node exporter, you can view the metrics Prometheus is scraping by typing EXTERNAL_HOST_IP_ADDRESS:9100/metrics in your web browser. The External IP address can be found in Google Cloud Console, under Products & Services -> Compute Engine- > VM instances:
+			
+		Step 4: Start Prometheus
+		
+			Now that node exporter is running, you can start Prometheus so it can begin monitoring the local host. Using the basic configuration file, start Prometheus in the background:
+			
+			prometheus --config.file=/share/prometheus.yml &
+			
+			Head's up: After placing a service in the background, you'll need to hit the ENTER key one more time before getting back to a standard prompt.
+			
+		Step 5: Set up a graphs to monitor host stats
+		
+			Now that you have both node exporter and Prometheus running, you can visit the built-in Prometheus page at EXTERNAL_HOST_IP_ADDRESS:9090 in your web browser. Select the node_cpu option, click Execute, and select the graph tab:
+			
+			Next, add another graph for node_disk_io_now:
+			
+			And finally, add one more graph for node_memory_Active:
+			
+		Step 6: Stress the machine
+		
+			Now that you have graphs set up for some of the important statistics on your host, it's time to create some interesting data. You can accomplish this by running stress-ng:
+			
+			stress-ng --all 10 --timeout 60
+			
+			Sit back and watch the graphs as stress-ng stresses the system!
+			
+		Conclusion
+		
+			Congrats! You've successfully configured Prometheus to monitor a host. You explored a config file, and started the node exporter to set up graphs to monitor some useful stats. By stressing the machine, you could see how the visualizations changed within the monitoring system. Now you can see why monitoring can be a handy form of automation for an IT Support Specialist!
+	
+	Monitoring Apache with Prometheus
+	
+		As an IT Support Specialist, it’s important to know how to monitor your systems and identify areas of improvement or potential issues that might pop up.
+		
+		The Prometheus Blackbox monitoring system can create a set of alert rules to send notifications when probes start to fail.
+		
+		In this lab, you'll configure Prometheus, along with the Blackbox exporter in order to create an email alert that triggers when an Apache web server goes down.
+		
+		Step 1: Connect to the Prometheus host
+		
+		Step 2: Change directories
+		
+			We've provided a basic Prometheus configuration file in the directory /share called prometheus.yml. You'll be working out of this directory, so first navigate your shell to that directory, using the change directory command:
+			
+			cd /share
+			
+		Step 3: Start Alertmanager
+		
+			Prometheus does not, by default, have a notification framework. So, we've installed alertmanager, which uses the built-in alerting framework to alert through a series of receivers. For demo purposes, we'll use the built-in Alerts page on the Prometheus web page to view the alerts. But first, you'll need to start the alertmanager with the config file we've provided (/share/alertmanager.yml), and send it to the background using this command:
+			
+			alertmanager --config.file=/share/alertmanager.yml &
+			
+			Head's up: After placing a service in the background, you'll need to hit the ENTER key one more time before getting back to a standard prompt.
+			
+		Step 4: Start Prometheus
+		
+			Now that alertmanager is running, you'll need to start the Prometheus service, just like in the last lab. However, you now need to pass a new command line flag. Using the basic configuration file and our local install of alertmanager, start Prometheus in the background:
+			
+			prometheus --config.file=/share/prometheus.yml --alertmanager.url=http://localhost:9093 &
+			
+			Head's up: After placing a service in the background, you'll need to hit the ENTER key one more time before getting back to a standard prompt.
+			
+		Step 5: Navigate to the alerts page
+		
+			Now that alertmanager and Prometheus are running, navigate to the local Prometheus web page using the External IP of the prometheus-host machine at port 9090 (i.e. EXTERNAL_IP_ADDRESS:9090). The External IP address can be found in Google Cloud Console, under the Products & Services -> Compute Engine -> VM instances:
+			
+		6: Take down the Apache2 services
+		
+			Next, you'll trigger the apache_down alert by logging into the apache-host instance and killing the apache2 services. SSH into the apache-host instance and run the following command to kill the apache services:
+			
+			sudo pkill apache2
+	
+	

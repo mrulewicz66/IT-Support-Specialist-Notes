@@ -1,0 +1,213 @@
+AUTOMATIONS AT SCALE
+
+	A scalable system is a flexible one.
+	
+	Motivation for Automation at SCALE
+	
+		Infrastructure-as-code, or IaC approach, revolves around the creation of configuration files that describe how a machine should be provisioned and managed. It's then combined with some automatic tooling that applies these configurations to the different nodes in your infrastructure. 
+		
+		IaC is usually applied in Cloud computing environments where machines are treated more like a herd of interchangeable resources and less like individual computers.
+		
+		Having IaC also means that you can apply the benefits of a VCS to your very infrastructure. Since the configuration of your computers is sstored in files, those files can be added to a VCS.
+		
+	What is configuration management?
+	
+		Configuration Management System, a common way to manage IT infrastructure treated as code. Set of tools and engineering practices that manage the software, infrastructure, and processes that provide IT to a company. It helps make sure that when you modify a system, those changes are done in a systematic, repeatable way. This makes changes efficient and consistent.
+		
+		Some popular CMS include Chef, Puppet, Ansible, and CFEngine. 
+		
+		CMS might also have some kind of cloud integration in order to manage resources in cloud environments like Amazon EC2, Microsoft Azure, or the Google Cloud Platform.
+		
+	Summary
+	
+		IaC means that your fleet of nodes can be consistent, versionable, reliable, and repeatable.
+		
+		Machines are treated like replaceable resources that can be churned out on demand, with the automation provided by a CMS, like Chef.
+		
+Configuration Management Using Chef
+		
+	Intro to Chef
+
+		Chef is a CMS that provides a suite of tools and apps to develop, deploy, and maintain infrastructure as code.
+		
+		Intent-based automation paradigm, this means that you tell Chef what the desired config should be, not how it should get there. As a developer of Chef config, you only need to tell it what the desired state is, and Chef will take care of it automatically.
+		
+	Idempotency and Convergence
+	
+		An idempotent action means something that can be performed over and over again, without changing the system after the first time the action was performed and with no unintended side effects.
+		
+		If a file already exists, then Chef will understand that no action has to be taken. If the file doesn't exist, then Chef will create it. No matter how many times chef applies that recipe, the same file, with the same text will be created.
+		
+		If a script is idempotent, it can fail halfway through its task and be run again without negative effects. Most Chefs' resources provide idempotent actions, except for execute, The actions taken by the execute resource, which is responsible for running a command, are typically not idempotent. This is because they're usually unique to the environment in which they run.
+		
+			mv file.txt Desktop/
+			
+		What happens if we run the command again after it's been executed once? We get an error because the file isn't in the same place. As you can see, this was not an idempotent action since executing the same thing produced a different result and the unintended side effect of an error.
+		
+		Test and Repair model, When Chef takes an action specified in a recipe, it only makes changes to the system if they're necessary. This means that it first tests to see if the resource being managed, like a file or package, actually needs to be modified. If the file exists in the place we wanted to , no action needs to be taken. If a package is already installed, there's no need to install it again. 
+		
+		The set of steps Chef takes to move the system into the desired state is called converging the system. Chef generally takes idempotent actions to converge the system to the state described by its config recipes. 
+		
+		So how does Chef know about the state of the system? It uses a program called, Ohai, to gather information about the node. Chef-client is a piece of software that runs locally on nodes and is used to apply configuration. Ohai is executed at the start of every Chef run in order to determine the state of the system. It stores this infomation in attributes, which are bits of specific detail about a given node. Other CMS often use similar tools to gather node information like puppets factor service.
+	
+	Chef and Ruby
+	
+		Majority of Chef build on Ruby. Chef's server has parts of it written in a programming language called Erlang.
+		
+		Domain-specific language (DSL) - A specialized computer language that's used for a specific purpose, like declaring resources within a Chef recipe.
+		
+		The Chef DSL is built on top of the Ruby language.
+		
+		By using DSL, Chef and other CMS's, gives it's users a batch of expressions tailored to focus on the tasks of system administration and config. It also still allows access to the full ruby language underneath. This means that you don't need to be a programmer to use Chef. And the config you write will be focused on the domain specific goal you're trying to accomplish.
+		
+		DSL's aren't just for CMS. You can find them in monitoring apps, like Google's Borgmon system, build tools like Gradle, and FB's spam fighting FXL.
+	
+	Chef Configurations
+	
+		For example if we want to make sure the Aphache2 server is up and running on a node.
+		
+			package "apache2" do
+				#make sure apache2 is intalled
+				action :install
+			end
+			
+			service "apache2" do
+				# make sure the http service automatically comes up if the node reboots and is tarted
+				action [ :enable, :start ]
+			end
+			
+			There are two resources in this recipe, the first one is a resource with the type of package with a name of Apache 2. The package resource is used to install server on a node and in this case, it'll make sure that the Apache 2 package is installed. 
+			
+			The second resource is of type service which is used to manage services on a node. We're telling Chef in this recipe that we want the Apache2 program to be started as a service automatically on the node. 
+			
+			Each resource specifies an action. In the service resource, we've actually given two, grouped together in our old friend the array. In this case, the two actionsw are enable and start, which makes sure that the Apache2 service will be automatically brought up on the node.
+			
+		A resource generally has 4 types:
+		
+			Type
+			Name
+			Properties
+			Actions
+			
+		Some of these components are provided through default values, like the package name for package resource so you don't have to explicitly write them out. For example, since the default action for the package resource is to install it, you can rewrite that resource block like: package "apache2" and get the same results.
+		
+		Cookbooks generally represent a set of configuration for a single infrastructure unit or scenario, like it's stated in the official Chef documentation.
+		
+		Chef Supermarket -  like Ruby gems.
+			
+			Test Kitchen -  lets you test your recipes and cookbooks in a sandbox environment, so that you can make sure they work before they're deployed to production nodes. Test Kitchen works in conjunction with some virutalization tools, to create disposable VM's with Chef software installed on them where you can deploy your config code and test it.
+			
+	
+	Chef Local Mode
+	
+		Create a Chef program local mode.
+		
+			mkdir chef-code
+			
+			cd chef-code
+			
+			vim omelette_recipe.rb
+				file "/tmp/omelette" do
+					content "eggs, cheese, and mushrooms"
+				end
+			
+			chef-client --local-mode omelette_recipe.rb
+			//create new file /tmp/omelette
+			
+			vim cleanup.rb
+				file "/tmp/omelette" do
+					action :delete
+				end
+				
+			chef-client --local-mode cleanup.rb
+			
+	
+	Chef Ecosystem and Architecture
+	
+		Knife - used to specify things like where the Chef server and cookbook files live.
+	
+		The knife.rb file is loaded every time you use the knife tool, and it's usually stored in the ~/.chef directory.
+		
+		The path to the cookbook dir is specified along with the location of the chef server and some ogging parameters. Also, check out the current dir. line. This indicates that the variable called current dir. is set to the value of the given expression. In Ruby, the (__FILE__) variable points to the location of the current file, in this case knife.rb.
+		
+		The current dir. refers to the directory where this knife.rb file is stored. This variable comes in handy for other lines in the configuration like client key. Since we don't have to explicitly say where the admin.pem file is, the key that chef uses to validate you are who you say you are. Instead, we just say it's the file called admin.pem in the current dir.
+		
+		The same goes for cookbooks as you can see on the last line. There are all kinds of ways you can customize knife using this file.
+	
+Managing Nodes with Chef
+
+	Overview
+	
+		Install and configure the Apache2 server on a node to host a simple website. Success will mean that we can make HTTP requests to the node and get the responses we expect.
+		
+		Configuration lifecycle involves: Planning, Development, Testing, Deployment
+	
+	Planning
+	
+		1)Install the apache2 program onto your machine.
+		2)Make sure the apache2 service is running.
+		3)Create an html file in the right place to represent the web page we want to serve.
+		
+		-A package resource to install pache2 on our node
+		-A service to make sure that apche2 is running
+		-A template to represent the html page
+		
+			See how this recipe defines a template file.
+				
+				template "/var/www/html/index.html" do
+					source 'index.html.erb'
+				end
+				
+			This tells the chef client that we want a file called index.html to be added to the /var/www/html directory. And the, it should be build from a template called index.html.erb.
+			
+			In Apache2, the /var/www/html directory is special because the Apache2 Server expects the default website file to be located there.
+			
+			The template file itself might look like this.
+			
+				<html>
+					<body>
+						<title>Hi! The name of this computer is <%= node['fqdn'] %></title>
+					</body>
+				</html>
+				
+			The template file is just an html web page with the extra extension.erb to indicate that the variables inside of it can be expanded. These variables are anything between these delimiters. In this case, the web page will display a greeting with the hostname of the machine which is serving the request or chef node.
+			
+		Given all of this, we can guess that we'll want a recipe to perform the three tasks we outlined earlier, along with a template file to represent the web page we want to serve.
+		
+		To organize all of this, we'll want to store it in a cookbook, which will first test and then push to our chef server and nodes.
+	
+	Creating the Configuration
+	
+		We begin by creating a folder on the local workstation called Chef Project. Inside that, we'll want to have a folder to hold our cookbooks, called cookbooks.
+		
+		Next, we need a cookbook. Chef dev kit gies us one automatically we can generate w/: chef generate cookbook, which we will want in the cookbooks directory.
+		
+		
+	
+	Testing the Configuration
+	
+		kitchen create
+		
+		kitchen list
+		
+		kitchen converge
+		
+		kitchen exec (lets us send any command we want to the test VM that we made w/ kitchen create) -curl terminal (make a request for the home page)
+		
+		curl, can be used to requests for files like web pages from other computers
+	
+	Deploying
+	
+		
+	
+	Scaling Chef
+	
+		
+	
+	Extending Chef
+	
+		
+	
+	Summary
+	
+		
